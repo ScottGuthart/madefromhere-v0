@@ -49,7 +49,7 @@ export function ContentEditor({ content }: { content: SiteContent }) {
         <Input
           name="hero_tagline"
           defaultValue={content.hero_tagline ?? ''}
-          placeholder="Abstract paintings by a very good cat"
+          placeholder="Original art by a very good cat"
         />
       </Field>
       <Field label="About page title">

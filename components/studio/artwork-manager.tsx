@@ -48,7 +48,7 @@ function AddArtworkForm() {
     startTransition(async () => {
       try {
         await createArtwork(formData)
-        toast.success('Painting added to the gallery')
+        toast.success('Piece added to the gallery')
         formRef.current?.reset()
         setPreview(null)
       } catch (e) {
@@ -100,7 +100,7 @@ function AddArtworkForm() {
         </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Medium">
-            <Input name="medium" placeholder="Acrylic on canvas" />
+            <Input name="medium" placeholder="Acrylic on canvas · Stoneware · …" />
           </Field>
           <Field label="Year">
             <Input name="year" placeholder="2024" />
@@ -127,7 +127,7 @@ function AddArtworkForm() {
         <div>
           <Button type="submit" disabled={pending}>
             <Plus className="size-4" />
-            {pending ? 'Adding…' : 'Add painting'}
+            {pending ? 'Adding…' : 'Add piece'}
           </Button>
         </div>
       </div>
@@ -143,7 +143,7 @@ function ArtworkRow({ art }: { art: Artwork }) {
     startTransition(async () => {
       try {
         await updateArtwork(formData)
-        toast.success('Painting updated')
+        toast.success('Piece updated')
         setEditing(false)
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Update failed')
@@ -158,7 +158,7 @@ function ArtworkRow({ art }: { art: Artwork }) {
     startTransition(async () => {
       try {
         await deleteArtwork(fd)
-        toast.success('Painting removed')
+        toast.success('Piece removed')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Delete failed')
       }
@@ -265,7 +265,7 @@ export function ArtworkManager({ artworks }: { artworks: Artwork[] }) {
       <AddArtworkForm />
       <div className="space-y-3">
         <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          {artworks.length} painting{artworks.length === 1 ? '' : 's'} in the gallery
+          {artworks.length} piece{artworks.length === 1 ? '' : 's'} in the gallery
         </h3>
         {artworks.map((art) => (
           <ArtworkRow key={art.id} art={art} />

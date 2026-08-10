@@ -19,9 +19,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'Luna Paints — Abstract Paintings by a Very Good Cat',
+  title: 'Luna Paints — Original Art by a Very Good Cat',
   description:
-    'The studio of Luna, a cat whose expressive abstract paintings capture the small joys of a cat’s day. Browse the gallery and upcoming shows.',
+    'The studio of Luna, a cat whose expressive art — paintings, pottery, and more — captures the small joys of a cat’s day. Browse the gallery and upcoming shows.',
   generator: 'v0.app',
 }
 

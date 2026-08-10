@@ -12,7 +12,7 @@ export function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
   if (artworks.length === 0) {
     return (
       <p className="py-24 text-center text-muted-foreground">
-        No paintings hung yet. Check back soon.
+        No work on display yet. Check back soon.
       </p>
     )
   }

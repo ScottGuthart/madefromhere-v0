@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'About — Luna Paints',
-  description: 'Meet Luna, the cat behind the paintings.',
+  description: 'Meet Luna, the cat behind the art.',
 }
 
 export default async function AboutPage() {
@@ -52,9 +52,9 @@ export default async function AboutPage() {
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Medium
+                  Mediums
                 </dt>
-                <dd className="mt-1 font-serif text-xl">Acrylic &amp; paw</dd>
+                <dd className="mt-1 font-serif text-xl">Paint, clay &amp; paw</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-widest text-muted-foreground">

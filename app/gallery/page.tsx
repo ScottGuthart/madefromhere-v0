@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Gallery — Luna Paints',
-  description: 'Browse original abstract paintings by Luna the cat.',
+  description: 'Browse original art — paintings, pottery, and more — by Luna the cat.',
 }
 
 export default async function GalleryPage() {
@@ -25,8 +25,8 @@ export default async function GalleryPage() {
             Gallery
           </h1>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            Every piece is an original on canvas. Tap any painting to see details
-            and inquire about availability.
+            Every piece is one of a kind &mdash; paintings, pottery, and more.
+            Tap any work to see details and inquire about availability.
           </p>
         </header>
         <GalleryGrid artworks={artworks} />

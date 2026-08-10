@@ -42,7 +42,7 @@ export default async function LoginPage() {
             The Studio
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Jackie&apos;s corner. Enter the password to add new paintings and
+            Jackie&apos;s corner. Enter the password to add new work and
             manage upcoming shows.
           </p>
           <div className="mt-8">

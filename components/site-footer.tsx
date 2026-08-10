@@ -7,8 +7,8 @@ export function SiteFooter({ email }: { email?: string }) {
         <div>
           <p className="font-serif text-2xl font-semibold">Luna Paints</p>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Original abstract paintings by a cat with a lot of feelings and
-            a little bit of paint on her nose.
+            Original art &mdash; paintings, pottery, and more &mdash; by a cat
+            with a lot of feelings and a little bit of paint on her nose.
           </p>
         </div>
         <div className="flex flex-col gap-1 text-sm text-muted-foreground md:items-end">
