@@ -30,11 +30,11 @@ export default async function HomePage() {
               Est. 2022 &middot; Working Artist
             </p>
             <h1 className="text-balance font-serif text-5xl font-semibold leading-[0.95] tracking-tight md:text-7xl">
-              {content.hero_tagline ?? 'Abstract paintings by a very good dog'}
+              {content.hero_tagline ?? 'Abstract paintings by a very good cat'}
             </h1>
             <p className="mt-6 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
-              Luna is a fawn pug who paints her feelings &mdash; the thrill of a
-              walk, the patience of waiting for dinner, the deep peace of an
+              Luna is a cat who paints her feelings &mdash; the thrill of the
+              red dot, the patience of waiting for dinner, the deep peace of an
               afternoon nap in the sun.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -58,7 +58,7 @@ export default async function HomePage() {
             <div className="relative aspect-4/5 overflow-hidden bg-muted">
               <Image
                 src="/luna/hero.png"
-                alt="Luna the pug in her art studio with paint on her paws"
+                alt="Luna the cat in her art studio with paint on her paws"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"

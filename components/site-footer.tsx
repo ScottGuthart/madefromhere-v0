@@ -7,7 +7,7 @@ export function SiteFooter({ email }: { email?: string }) {
         <div>
           <p className="font-serif text-2xl font-semibold">Luna Paints</p>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Original abstract paintings by a fawn pug with a lot of feelings and
+            Original abstract paintings by a cat with a lot of feelings and
             a little bit of paint on her nose.
           </p>
         </div>
@@ -29,7 +29,7 @@ export function SiteFooter({ email }: { email?: string }) {
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground/70">
-            &copy; {new Date().getFullYear()} Luna Paints. Good dog.
+            &copy; {new Date().getFullYear()} Luna Paints. Good cat.
           </p>
         </div>
       </div>

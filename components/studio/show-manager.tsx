@@ -55,7 +55,7 @@ function AddShowForm() {
       </Field>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Venue">
-          <Input name="venue" placeholder="The Little Dog Gallery" />
+          <Input name="venue" placeholder="The Little Cat Gallery" />
         </Field>
         <Field label="Location">
           <Input name="location" placeholder="Brooklyn, NY" />

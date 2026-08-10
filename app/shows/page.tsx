@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Shows — Luna Paints',
-  description: 'Upcoming and past exhibitions featuring Luna the pug.',
+  description: 'Upcoming and past exhibitions featuring Luna the cat.',
 }
 
 function ShowRow({ show, past = false }: { show: Show; past?: boolean }) {

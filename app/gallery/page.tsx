@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Gallery — Luna Paints',
-  description: 'Browse original abstract paintings by Luna the pug.',
+  description: 'Browse original abstract paintings by Luna the cat.',
 }
 
 export default async function GalleryPage() {
