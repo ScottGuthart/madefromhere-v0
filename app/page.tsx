@@ -30,7 +30,7 @@ export default async function HomePage() {
               Est. 2022 &middot; Working Artist
             </p>
             <h1 className="text-balance font-serif text-5xl font-semibold leading-[0.95] tracking-tight md:text-7xl">
-              {content.hero_tagline ?? 'Original art by a very good cat'}
+              {content.hero_tagline ?? 'Made From Here'}
             </h1>
             <p className="mt-6 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
               Luna turns her feelings into art &mdash; paintings, pottery, and
