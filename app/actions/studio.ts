@@ -142,6 +142,46 @@ export async function deleteShow(formData: FormData) {
   revalidateAll()
 }
 
+/* ---------- Luna photos ---------- */
+
+const PHOTO_KEYS = ['hero_image', 'about_image'] as const
+
+export async function updateLunaPhoto(formData: FormData) {
+  await requireAuth()
+
+  const key = String(formData.get('key') ?? '')
+  if (!PHOTO_KEYS.includes(key as (typeof PHOTO_KEYS)[number])) {
+    throw new Error('Invalid photo slot')
+  }
+
+  const file = formData.get('image') as File | null
+  if (!file || file.size === 0) {
+    throw new Error('Please choose a photo to upload')
+  }
+
+  const blob = await put(`luna/${key}-${Date.now()}-${file.name}`, file, {
+    access: 'public',
+  })
+
+  // Remove the previous uploaded photo (skip the bundled starter images).
+  const existing = await sql`SELECT value FROM site_content WHERE key = ${key}`
+  const oldUrl = (existing[0] as { value: string })?.value
+  if (oldUrl && oldUrl.includes('blob.vercel-storage.com')) {
+    try {
+      await del(oldUrl)
+    } catch {
+      // ignore blob deletion failures
+    }
+  }
+
+  await sql`
+    INSERT INTO site_content (key, value, updated_at)
+    VALUES (${key}, ${blob.url}, now())
+    ON CONFLICT (key) DO UPDATE SET value = ${blob.url}, updated_at = now()
+  `
+  revalidateAll()
+}
+
 /* ---------- Site content ---------- */
 
 export async function updateContent(formData: FormData) {

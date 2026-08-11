@@ -57,7 +57,7 @@ export default async function HomePage() {
           <div className="relative">
             <div className="relative aspect-4/5 overflow-hidden bg-muted">
               <Image
-                src="/luna/hero.png"
+                src={content.hero_image ?? '/luna/hero.png'}
                 alt="Luna the cat in her art studio with paint on her paws"
                 fill
                 priority

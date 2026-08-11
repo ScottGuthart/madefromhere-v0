@@ -23,7 +23,7 @@ export default async function AboutPage() {
         <div className="grid gap-10 md:grid-cols-2 md:gap-14">
           <div className="relative aspect-4/5 overflow-hidden bg-muted md:sticky md:top-24 md:self-start">
             <Image
-              src="/luna/about.png"
+              src={content.about_image ?? '/luna/about.png'}
               alt="Luna standing on a painted canvas in her studio"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"

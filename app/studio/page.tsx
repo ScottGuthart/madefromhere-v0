@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { ArtworkManager } from '@/components/studio/artwork-manager'
 import { ShowManager } from '@/components/studio/show-manager'
+import { PhotoManager } from '@/components/studio/photo-manager'
 import { ContentEditor } from '@/components/studio/content-editor'
 
 export const dynamic = 'force-dynamic'
@@ -70,6 +71,7 @@ export default async function StudioPage() {
           <TabsList>
             <TabsTrigger value="artwork">Gallery</TabsTrigger>
             <TabsTrigger value="shows">Shows</TabsTrigger>
+            <TabsTrigger value="photos">Luna&apos;s photos</TabsTrigger>
             <TabsTrigger value="content">Site content</TabsTrigger>
           </TabsList>
 
@@ -78,6 +80,9 @@ export default async function StudioPage() {
           </TabsContent>
           <TabsContent value="shows" className="mt-6">
             <ShowManager shows={shows} />
+          </TabsContent>
+          <TabsContent value="photos" className="mt-6">
+            <PhotoManager content={content} />
           </TabsContent>
           <TabsContent value="content" className="mt-6">
             <ContentEditor content={content} />
