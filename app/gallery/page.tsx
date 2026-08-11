@@ -6,7 +6,7 @@ import { getArtworks, getSiteContent } from '@/lib/queries'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Gallery — Luna Paints',
+  title: 'Gallery — From Here Studio',
   description: 'Browse original art — paintings, pottery, and more — by Luna the cat.',
 }
 

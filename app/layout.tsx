@@ -19,15 +19,15 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'Luna Paints — Original Art by a Very Good Cat',
+  title: 'From Here Studio — Art Rooted in Place',
   description:
-    'The studio of Luna, a cat whose expressive art — paintings, pottery, and more — captures the small joys of a cat’s day. Browse the gallery and upcoming shows.',
+    'From Here Studio is the home of Luna, a cat whose expressive art — paintings, pottery, and more — is rooted in place. Browse the gallery and upcoming shows.',
   generator: 'v0.app',
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light',
-  themeColor: '#fbf9f4',
+  themeColor: '#efe9dc',
 }
 
 export default function RootLayout({

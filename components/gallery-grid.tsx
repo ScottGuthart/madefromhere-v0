@@ -93,7 +93,7 @@ export function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
                 </p>
                 {active.status === 'available' && (
                   <a
-                    href="mailto:hello@lunapaints.art"
+                    href="mailto:hello@fromherestudio.art"
                     className="mt-auto inline-flex w-fit items-center border border-foreground px-4 py-2 text-sm tracking-wide transition-colors hover:bg-foreground hover:text-background"
                   >
                     Inquire about this piece

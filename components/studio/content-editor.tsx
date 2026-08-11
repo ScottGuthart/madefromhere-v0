@@ -71,7 +71,7 @@ export function ContentEditor({ content }: { content: SiteContent }) {
           name="contact_email"
           type="email"
           defaultValue={content.contact_email ?? ''}
-          placeholder="hello@lunapaints.art"
+          placeholder="hello@fromherestudio.art"
         />
       </Field>
       <div>

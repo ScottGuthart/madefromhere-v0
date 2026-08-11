@@ -20,10 +20,15 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" className="flex items-baseline gap-2" onClick={() => setOpen(false)}>
-          <span className="font-serif text-2xl font-semibold tracking-tight">Luna</span>
-          <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-            paints
+        <Link
+          href="/"
+          className="flex flex-col leading-none"
+          onClick={() => setOpen(false)}
+          aria-label="From Here Studio — home"
+        >
+          <span className="font-serif text-2xl tracking-tight">from here</span>
+          <span className="mt-1 text-[0.65rem] uppercase tracking-[0.4em] text-muted-foreground">
+            studio
           </span>
         </Link>
 

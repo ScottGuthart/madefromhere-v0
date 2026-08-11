@@ -26,13 +26,20 @@ export default async function HomePage() {
         {/* Hero */}
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 md:grid-cols-2 md:gap-12 md:px-8 md:py-20">
           <div>
-            <p className="mb-5 text-xs uppercase tracking-[0.3em] text-accent">
-              Est. 2022 &middot; Working Artist
-            </p>
-            <h1 className="text-balance font-serif text-5xl font-semibold leading-[0.95] tracking-tight md:text-7xl">
-              {content.hero_tagline ?? 'Made From Here'}
+            <h1 className="sr-only">
+              From Here Studio &mdash;{' '}
+              {content.hero_tagline ?? 'Made From Here'}. Original art by Luna the
+              cat.
             </h1>
-            <p className="mt-6 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
+            <Image
+              src="/brand/from-here-studio.png"
+              alt="From Here Studio — art rooted in place. A cat gazing at a crescent moon over a mountain lake."
+              width={620}
+              height={620}
+              priority
+              className="mx-auto w-full max-w-[440px] md:mx-0"
+            />
+            <p className="mt-4 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
               Luna turns her feelings into art &mdash; paintings, pottery, and
               more. The thrill of the red dot, the patience of waiting for
               dinner, the deep peace of an afternoon nap in the sun.

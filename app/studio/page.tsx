@@ -15,7 +15,7 @@ import { ContentEditor } from '@/components/studio/content-editor'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Studio — Luna Paints',
+  title: 'Studio — From Here Studio',
 }
 
 export default async function StudioPage() {
@@ -34,12 +34,13 @@ export default async function StudioPage() {
       <Toaster position="top-center" />
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 md:px-8">
-          <div className="flex items-baseline gap-3">
-            <span className="font-serif text-xl font-semibold">Luna</span>
-            <span className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <div className="flex flex-col leading-none">
+            <span className="font-serif text-xl tracking-tight">from here</span>
+            <span className="mt-0.5 text-[0.6rem] uppercase tracking-[0.4em] text-muted-foreground">
               studio
             </span>
           </div>
+
           <div className="flex items-center gap-2">
             <Link
               href="/"
