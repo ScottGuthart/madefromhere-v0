@@ -23,32 +23,47 @@ export function MediaCarousel({
 }) {
   const [index, setIndex] = useState(0)
   const safeItems = items.length > 0 ? items : [{ type: 'image' as const, url: '' }]
-  const current = safeItems[Math.min(index, safeItems.length - 1)]
 
   function go(delta: number) {
     setIndex((i) => (i + delta + safeItems.length) % safeItems.length)
   }
 
   return (
-    <div className={cn('relative bg-muted', className)}>
-      {current.type === 'video' ? (
-        <video
-          key={current.url}
-          src={current.url}
-          controls
-          playsInline
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        <Image
-          key={current.url}
-          src={current.url || '/placeholder.svg'}
-          alt={alt}
-          fill
-          sizes={imageSizes}
-          className="object-cover"
-        />
-      )}
+    <div className={cn('relative overflow-hidden bg-muted', className)}>
+      {/* Every slide is mounted from the start (not just the active one) so
+       * videos begin fetching as soon as the carousel is on the page,
+       * instead of only once someone swipes to them. The active slide gets
+       * `preload="auto"` to fully buffer; the rest get the much lighter
+       * "metadata" so they're not downloading in full for no reason. */}
+      {safeItems.map((item, i) => (
+        <div
+          key={item.url + i}
+          className={cn(
+            'absolute inset-0 transition-opacity duration-200',
+            i === index ? 'z-0 opacity-100' : 'pointer-events-none z-0 opacity-0',
+          )}
+          aria-hidden={i === index ? undefined : true}
+        >
+          {item.type === 'video' ? (
+            <video
+              src={item.url}
+              controls={i === index}
+              playsInline
+              preload={i === index ? 'auto' : 'metadata'}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <Image
+              src={item.url || '/placeholder.svg'}
+              alt={alt}
+              fill
+              sizes={imageSizes}
+              priority={i === index}
+              className="object-cover"
+            />
+          )}
+        </div>
+      ))}
 
       {safeItems.length > 1 && (
         <>
@@ -56,7 +71,7 @@ export function MediaCarousel({
             type="button"
             aria-label="Previous"
             onClick={() => go(-1)}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 p-1.5 text-foreground opacity-80 transition-opacity hover:opacity-100"
+            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-1.5 text-foreground opacity-80 transition-opacity hover:opacity-100"
           >
             <ChevronLeft className="size-5" />
           </button>
@@ -64,11 +79,11 @@ export function MediaCarousel({
             type="button"
             aria-label="Next"
             onClick={() => go(1)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 p-1.5 text-foreground opacity-80 transition-opacity hover:opacity-100"
+            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-1.5 text-foreground opacity-80 transition-opacity hover:opacity-100"
           >
             <ChevronRight className="size-5" />
           </button>
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+          <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
             {safeItems.map((item, i) => (
               <button
                 key={item.url + i}
