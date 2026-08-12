@@ -20,6 +20,7 @@ import {
   deleteArtworkMedia,
   reorderArtworkMedia,
 } from '@/app/actions/studio'
+import { uploadFile, mediaTypeFor } from '@/lib/blob-client'
 import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,7 +88,24 @@ function normalizeCollectionId(formData: FormData) {
 function AddArtworkForm({ collections }: { collections: Collection[] }) {
   const formRef = useRef<HTMLFormElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
+
+  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPreview(URL.createObjectURL(file))
+    setUploading(true)
+    try {
+      setImageUrl(await uploadFile(file, 'artworks'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      setPreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function onSubmit(formData: FormData) {
     normalizeCollectionId(formData)
@@ -97,6 +115,7 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
         toast.success('Piece added to the gallery')
         formRef.current?.reset()
         setPreview(null)
+        setImageUrl('')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Something went wrong')
       }
@@ -119,23 +138,20 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
             </span>
           )}
         </div>
+        <input type="hidden" name="image_url" value={imageUrl} />
         <Field label="Upload image">
-          <Input
-            type="file"
-            name="image"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              setPreview(file ? URL.createObjectURL(file) : null)
-            }}
-          />
+          <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+          {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
         </Field>
         <Field label="…or paste an image URL">
           <Input
             type="text"
-            name="image_url"
             placeholder="https://…"
-            onChange={(e) => setPreview(e.target.value || null)}
+            disabled={uploading}
+            onChange={(e) => {
+              setImageUrl(e.target.value)
+              setPreview(e.target.value || null)
+            }}
           />
         </Field>
       </div>
@@ -176,9 +192,9 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
           />
         </Field>
         <div>
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || uploading}>
             <Plus className="size-4" />
-            {pending ? 'Adding…' : 'Add piece'}
+            {pending ? 'Adding…' : uploading ? 'Uploading…' : 'Add piece'}
           </Button>
         </div>
       </div>
@@ -270,24 +286,38 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
   // Bumping this key remounts the file input, which is how we clear its
   // selection after a successful upload (Input doesn't forward a ref).
   const [inputKey, setInputKey] = useState(0)
+  const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  function onFilesChosen(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFilesChosen(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0) return
-    const fd = new FormData()
-    fd.set('artwork_id', String(artworkId))
-    for (const file of Array.from(files)) fd.append('media', file)
-    startTransition(async () => {
-      try {
-        await addArtworkMedia(fd)
-        toast.success('Added to the carousel')
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Upload failed')
-      } finally {
-        setInputKey((k) => k + 1)
-      }
-    })
+    const chosen = Array.from(files)
+    setUploading(true)
+    try {
+      const items = await Promise.all(
+        chosen.map(async (file) => ({
+          url: await uploadFile(file, 'artwork-media'),
+          media_type: mediaTypeFor(file),
+        })),
+      )
+      const fd = new FormData()
+      fd.set('artwork_id', String(artworkId))
+      fd.set('items', JSON.stringify(items))
+      startTransition(async () => {
+        try {
+          await addArtworkMedia(fd)
+          toast.success('Added to the carousel')
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'Something went wrong')
+        }
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+      setInputKey((k) => k + 1)
+    }
   }
 
   return (
@@ -318,9 +348,10 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
           type="file"
           accept="image/*,video/*"
           multiple
-          disabled={pending}
+          disabled={pending || uploading}
           onChange={onFilesChosen}
         />
+        {uploading && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
       </Field>
     </div>
   )
