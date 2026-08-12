@@ -1,6 +1,6 @@
 'use server'
 
-import { put, del } from '@vercel/blob'
+import { del } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
 import { sql } from '@/lib/db'
 import { ensureSchema } from '@/lib/schema'
@@ -31,7 +31,13 @@ async function deleteBlobIfOwned(url: string | null | undefined) {
   }
 }
 
-/* ---------- Collections ---------- */
+/* ---------- Collections ----------
+ *
+ * Photo/video uploads happen client-side (see lib/blob-client.ts + the
+ * /api/upload route) so these actions only ever receive small text fields —
+ * a Server Action's request body is capped around 4.5MB on Vercel, which a
+ * raw iPhone photo or video can easily exceed.
+ */
 
 export async function createCollection(formData: FormData) {
   await requireAuth()
@@ -39,15 +45,7 @@ export async function createCollection(formData: FormData) {
 
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
-
-  const file = formData.get('cover_image') as File | null
-  let coverUrl = String(formData.get('cover_image_url') ?? '').trim()
-  if (file && file.size > 0) {
-    const blob = await put(`collections/${Date.now()}-${file.name}`, file, {
-      access: 'public',
-    })
-    coverUrl = blob.url
-  }
+  const coverUrl = String(formData.get('cover_image_url') ?? '').trim()
 
   const maxRows = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM collections`
   const sortOrder = Number((maxRows[0] as { max: number }).max) + 1
@@ -66,18 +64,15 @@ export async function updateCollection(formData: FormData) {
   const id = Number(formData.get('id'))
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
+  const newCoverUrl = String(formData.get('cover_image_url') ?? '').trim()
 
-  const file = formData.get('cover_image') as File | null
-  if (file && file.size > 0) {
-    const blob = await put(`collections/${Date.now()}-${file.name}`, file, {
-      access: 'public',
-    })
+  if (newCoverUrl) {
     const rows = await sql`SELECT cover_image_url FROM collections WHERE id = ${id}`
     await deleteBlobIfOwned((rows[0] as { cover_image_url: string })?.cover_image_url)
 
     await sql`
       UPDATE collections
-      SET title = ${title}, description = ${description}, cover_image_url = ${blob.url}
+      SET title = ${title}, description = ${description}, cover_image_url = ${newCoverUrl}
       WHERE id = ${id}
     `
   } else {
@@ -109,15 +104,7 @@ export async function createArtwork(formData: FormData) {
   await requireAuth()
   await ensureSchema()
 
-  const file = formData.get('image') as File | null
-  let imageUrl = String(formData.get('image_url') ?? '').trim()
-
-  if (file && file.size > 0) {
-    const blob = await put(`artworks/${Date.now()}-${file.name}`, file, {
-      access: 'public',
-    })
-    imageUrl = blob.url
-  }
+  const imageUrl = String(formData.get('image_url') ?? '').trim()
 
   if (!imageUrl) {
     throw new Error('An image is required')
@@ -188,8 +175,15 @@ export async function addArtworkMedia(formData: FormData) {
   await ensureSchema()
 
   const artworkId = Number(formData.get('artwork_id'))
-  const files = formData.getAll('media').filter((f): f is File => f instanceof File && f.size > 0)
-  if (files.length === 0) {
+  const itemsRaw = String(formData.get('items') ?? '[]')
+  let items: { url: string; media_type: 'image' | 'video' }[]
+  try {
+    items = JSON.parse(itemsRaw)
+  } catch {
+    items = []
+  }
+  items = items.filter((i) => i && typeof i.url === 'string' && i.url.trim())
+  if (items.length === 0) {
     throw new Error('Choose at least one photo or video')
   }
 
@@ -198,14 +192,11 @@ export async function addArtworkMedia(formData: FormData) {
   `
   let nextOrder = Number((maxRows[0] as { max: number }).max) + 1
 
-  for (const file of files) {
-    const mediaType = file.type.startsWith('video/') ? 'video' : 'image'
-    const blob = await put(`artwork-media/${Date.now()}-${file.name}`, file, {
-      access: 'public',
-    })
+  for (const item of items) {
+    const mediaType = item.media_type === 'video' ? 'video' : 'image'
     await sql`
       INSERT INTO artwork_media (artwork_id, media_type, url, sort_order)
-      VALUES (${artworkId}, ${mediaType}, ${blob.url}, ${nextOrder})
+      VALUES (${artworkId}, ${mediaType}, ${item.url}, ${nextOrder})
     `
     nextOrder += 1
   }
@@ -316,14 +307,10 @@ export async function updateLunaPhoto(formData: FormData) {
     throw new Error('Invalid photo slot')
   }
 
-  const file = formData.get('image') as File | null
-  if (!file || file.size === 0) {
+  const imageUrl = String(formData.get('image_url') ?? '').trim()
+  if (!imageUrl) {
     throw new Error('Please choose a photo to upload')
   }
-
-  const blob = await put(`luna/${key}-${Date.now()}-${file.name}`, file, {
-    access: 'public',
-  })
 
   // Remove the previous uploaded photo (skip the bundled starter images).
   const existing = await sql`SELECT value FROM site_content WHERE key = ${key}`
@@ -332,8 +319,8 @@ export async function updateLunaPhoto(formData: FormData) {
 
   await sql`
     INSERT INTO site_content (key, value, updated_at)
-    VALUES (${key}, ${blob.url}, now())
-    ON CONFLICT (key) DO UPDATE SET value = ${blob.url}, updated_at = now()
+    VALUES (${key}, ${imageUrl}, now())
+    ON CONFLICT (key) DO UPDATE SET value = ${imageUrl}, updated_at = now()
   `
   revalidateAll()
 }

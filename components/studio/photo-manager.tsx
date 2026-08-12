@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { updateLunaPhoto } from '@/app/actions/studio'
+import { uploadFile } from '@/lib/blob-client'
 import type { SiteContent } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,8 +35,25 @@ const SLOTS: PhotoSlot[] = [
 function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
   const [pending, startTransition] = useTransition()
   const [preview, setPreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
 
   const shown = preview ?? current ?? slot.fallback
+
+  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPreview(URL.createObjectURL(file))
+    setUploading(true)
+    try {
+      setImageUrl(await uploadFile(file, 'luna'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      setPreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
@@ -43,6 +61,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
         await updateLunaPhoto(formData)
         toast.success('Photo updated')
         setPreview(null)
+        setImageUrl('')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Upload failed')
       }
@@ -55,6 +74,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
       className="flex flex-col gap-4 border border-border bg-card p-5 sm:flex-row"
     >
       <input type="hidden" name="key" value={slot.key} />
+      <input type="hidden" name="image_url" value={imageUrl} />
       <div className="relative aspect-4/5 w-full shrink-0 overflow-hidden bg-muted sm:w-40">
         <Image
           src={shown}
@@ -74,18 +94,10 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">
               Choose a new photo
             </Label>
-            <Input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                setPreview(file ? URL.createObjectURL(file) : null)
-              }}
-            />
+            <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
           </div>
-          <Button type="submit" disabled={pending}>
-            {pending ? 'Uploading…' : 'Save photo'}
+          <Button type="submit" disabled={pending || uploading}>
+            {uploading ? 'Uploading…' : pending ? 'Saving…' : 'Save photo'}
           </Button>
         </div>
       </div>

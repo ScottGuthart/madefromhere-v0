@@ -8,6 +8,7 @@ import {
   updateCollection,
   deleteCollection,
 } from '@/app/actions/studio'
+import { uploadFile } from '@/lib/blob-client'
 import type { Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,7 +36,24 @@ function Field({
 function AddCollectionForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [coverUrl, setCoverUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
+
+  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPreview(URL.createObjectURL(file))
+    setUploading(true)
+    try {
+      setCoverUrl(await uploadFile(file, 'collections'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      setPreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
@@ -44,6 +62,7 @@ function AddCollectionForm() {
         toast.success('Place added')
         formRef.current?.reset()
         setPreview(null)
+        setCoverUrl('')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Something went wrong')
       }
@@ -66,16 +85,10 @@ function AddCollectionForm() {
             </span>
           )}
         </div>
+        <input type="hidden" name="cover_image_url" value={coverUrl} />
         <Field label="Upload photo">
-          <Input
-            type="file"
-            name="cover_image"
-            accept="image/*"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              setPreview(file ? URL.createObjectURL(file) : null)
-            }}
-          />
+          <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+          {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
         </Field>
       </div>
 
@@ -91,9 +104,9 @@ function AddCollectionForm() {
           />
         </Field>
         <div>
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" disabled={pending || uploading}>
             <Plus className="size-4" />
-            {pending ? 'Adding…' : 'Add place'}
+            {pending ? 'Adding…' : uploading ? 'Uploading…' : 'Add place'}
           </Button>
         </div>
       </div>
@@ -103,7 +116,22 @@ function AddCollectionForm() {
 
 function CollectionRow({ collection }: { collection: Collection }) {
   const [editing, setEditing] = useState(false)
+  const [newCoverUrl, setNewCoverUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
+
+  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      setNewCoverUrl(await uploadFile(file, 'collections'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function onUpdate(formData: FormData) {
     startTransition(async () => {
@@ -111,6 +139,7 @@ function CollectionRow({ collection }: { collection: Collection }) {
         await updateCollection(formData)
         toast.success('Place updated')
         setEditing(false)
+        setNewCoverUrl('')
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Update failed')
       }
@@ -152,11 +181,13 @@ function CollectionRow({ collection }: { collection: Collection }) {
           <input type="hidden" name="id" value={collection.id} />
           <Input name="title" defaultValue={collection.title} required />
           <Textarea name="description" defaultValue={collection.description} rows={2} />
+          <input type="hidden" name="cover_image_url" value={newCoverUrl} />
           <Field label="Replace photo (optional)">
-            <Input type="file" name="cover_image" accept="image/*" />
+            <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+            {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
           </Field>
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={pending}>
+            <Button type="submit" size="sm" disabled={pending || uploading}>
               Save
             </Button>
             <Button
