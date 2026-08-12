@@ -2,18 +2,41 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { GalleryGrid } from '@/components/gallery-grid'
 import { CollectionsGrid } from '@/components/collections-grid'
+import type { MediaItem } from '@/components/media-carousel'
 import {
   getArtworks,
   getArtworkMediaByArtwork,
   getCollections,
   getSiteContent,
 } from '@/lib/queries'
+import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Gallery — From Here Studio',
   description: 'Browse original art — paintings, pottery, and more — by Luna the cat.',
+}
+
+// The place's own photo, then every piece made there (its main image, then
+// its supplemental photos/videos) — so the gallery grid card can be
+// browsed as one carousel without clicking into the place first.
+function slidesForCollection(
+  collection: Collection,
+  pieces: Artwork[],
+  mediaByArtwork: Record<number, ArtworkMedia[]>,
+): MediaItem[] {
+  const slides: MediaItem[] = []
+  if (collection.cover_image_url) {
+    slides.push({ type: 'image', url: collection.cover_image_url })
+  }
+  for (const piece of pieces) {
+    if (piece.image_url) slides.push({ type: 'image', url: piece.image_url })
+    for (const m of mediaByArtwork[piece.id] ?? []) {
+      slides.push({ type: m.media_type, url: m.url })
+    }
+  }
+  return slides
 }
 
 export default async function GalleryPage() {
@@ -27,6 +50,17 @@ export default async function GalleryPage() {
   const unassigned = artworks.filter((a) => a.collection_id == null)
   const mediaByArtwork = Object.fromEntries(mediaMap)
 
+  const slidesByCollection = Object.fromEntries(
+    collections.map((c) => [
+      c.id,
+      slidesForCollection(
+        c,
+        artworks.filter((a) => a.collection_id === c.id),
+        mediaByArtwork,
+      ),
+    ]),
+  )
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -39,9 +73,9 @@ export default async function GalleryPage() {
             Gallery
           </h1>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            Every piece begins with a place. Tap a location to see the work
-            made there — the materials gathered, the process, and the final
-            piece.
+            Every piece begins with a place. Use the arrows to browse the
+            materials gathered, the process, and the final piece made there —
+            or tap through for the full story.
           </p>
         </header>
 
@@ -51,7 +85,7 @@ export default async function GalleryPage() {
           </p>
         ) : (
           <>
-            <CollectionsGrid collections={collections} />
+            <CollectionsGrid collections={collections} slidesByCollection={slidesByCollection} />
 
             {unassigned.length > 0 && (
               <div className={collections.length > 0 ? 'mt-16' : undefined}>
