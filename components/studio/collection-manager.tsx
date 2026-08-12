@@ -12,6 +12,7 @@ import { uploadFile } from '@/lib/blob-client'
 import type { Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -87,7 +88,7 @@ function AddCollectionForm() {
         </div>
         <input type="hidden" name="cover_image_url" value={coverUrl} />
         <Field label="Upload photo">
-          <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+          <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
           {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
         </Field>
       </div>
@@ -183,7 +184,7 @@ function CollectionRow({ collection }: { collection: Collection }) {
           <Textarea name="description" defaultValue={collection.description} rows={2} />
           <input type="hidden" name="cover_image_url" value={newCoverUrl} />
           <Field label="Replace photo (optional)">
-            <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+            <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
             {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
           </Field>
           <div className="flex gap-2">

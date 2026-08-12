@@ -6,7 +6,7 @@ import { updateLunaPhoto } from '@/app/actions/studio'
 import { uploadFile } from '@/lib/blob-client'
 import type { SiteContent } from '@/lib/types'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
@@ -94,7 +94,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">
               Choose a new photo
             </Label>
-            <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+            <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
           </div>
           <Button type="submit" disabled={pending || uploading}>
             {uploading ? 'Uploading…' : pending ? 'Saving…' : 'Save photo'}
