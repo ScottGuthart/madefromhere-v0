@@ -1,7 +1,13 @@
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { GalleryGrid } from '@/components/gallery-grid'
-import { getArtworks, getSiteContent } from '@/lib/queries'
+import { CollectionsGrid } from '@/components/collections-grid'
+import {
+  getArtworks,
+  getArtworkMediaByArtwork,
+  getCollections,
+  getSiteContent,
+} from '@/lib/queries'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +17,15 @@ export const metadata = {
 }
 
 export default async function GalleryPage() {
-  const [artworks, content] = await Promise.all([getArtworks(), getSiteContent()])
+  const [collections, artworks, mediaMap, content] = await Promise.all([
+    getCollections(),
+    getArtworks(),
+    getArtworkMediaByArtwork(),
+    getSiteContent(),
+  ])
+
+  const unassigned = artworks.filter((a) => a.collection_id == null)
+  const mediaByArtwork = Object.fromEntries(mediaMap)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -25,11 +39,32 @@ export default async function GalleryPage() {
             Gallery
           </h1>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            Every piece is one of a kind &mdash; paintings, pottery, and more.
-            Tap any work to see details and inquire about availability.
+            Every piece begins with a place. Tap a location to see the work
+            made there — the materials gathered, the process, and the final
+            piece.
           </p>
         </header>
-        <GalleryGrid artworks={artworks} />
+
+        {collections.length === 0 && unassigned.length === 0 ? (
+          <p className="py-24 text-center text-muted-foreground">
+            No work on display yet. Check back soon.
+          </p>
+        ) : (
+          <>
+            <CollectionsGrid collections={collections} />
+
+            {unassigned.length > 0 && (
+              <div className={collections.length > 0 ? 'mt-16' : undefined}>
+                {collections.length > 0 && (
+                  <h2 className="mb-8 border-b border-border pb-4 font-serif text-2xl font-semibold">
+                    More work
+                  </h2>
+                )}
+                <GalleryGrid artworks={unassigned} mediaByArtwork={mediaByArtwork} />
+              </div>
+            )}
+          </>
+        )}
       </main>
       <SiteFooter email={content.contact_email} />
     </div>

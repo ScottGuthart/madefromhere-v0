@@ -3,11 +3,18 @@ import { redirect } from 'next/navigation'
 import { ExternalLink } from 'lucide-react'
 import { isAuthenticated } from '@/lib/auth'
 import { logout } from '@/app/actions/auth'
-import { getArtworks, getShows, getSiteContent } from '@/lib/queries'
+import {
+  getArtworks,
+  getArtworkMediaByArtwork,
+  getCollections,
+  getShows,
+  getSiteContent,
+} from '@/lib/queries'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { ArtworkManager } from '@/components/studio/artwork-manager'
+import { CollectionManager } from '@/components/studio/collection-manager'
 import { ShowManager } from '@/components/studio/show-manager'
 import { PhotoManager } from '@/components/studio/photo-manager'
 import { ContentEditor } from '@/components/studio/content-editor'
@@ -23,11 +30,14 @@ export default async function StudioPage() {
     redirect('/login')
   }
 
-  const [artworks, shows, content] = await Promise.all([
+  const [artworks, collections, mediaMap, shows, content] = await Promise.all([
     getArtworks(),
+    getCollections(),
+    getArtworkMediaByArtwork(),
     getShows(),
     getSiteContent(),
   ])
+  const mediaByArtwork = Object.fromEntries(mediaMap)
 
   return (
     <div className="min-h-screen">
@@ -70,14 +80,22 @@ export default async function StudioPage() {
 
         <Tabs defaultValue="artwork">
           <TabsList>
+            <TabsTrigger value="places">Places</TabsTrigger>
             <TabsTrigger value="artwork">Gallery</TabsTrigger>
             <TabsTrigger value="shows">Shows</TabsTrigger>
             <TabsTrigger value="photos">Luna&apos;s photos</TabsTrigger>
             <TabsTrigger value="content">Site content</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="places" className="mt-6">
+            <CollectionManager collections={collections} />
+          </TabsContent>
           <TabsContent value="artwork" className="mt-6">
-            <ArtworkManager artworks={artworks} />
+            <ArtworkManager
+              artworks={artworks}
+              collections={collections}
+              mediaByArtwork={mediaByArtwork}
+            />
           </TabsContent>
           <TabsContent value="shows" className="mt-6">
             <ShowManager shows={shows} />

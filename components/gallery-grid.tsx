@@ -3,10 +3,22 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import type { Artwork } from '@/lib/types'
+import { MediaCarousel, type MediaItem } from '@/components/media-carousel'
+import type { Artwork, ArtworkMedia } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-export function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
+function slidesFor(art: Artwork, media: ArtworkMedia[] | undefined): MediaItem[] {
+  const extra: MediaItem[] = (media ?? []).map((m) => ({ type: m.media_type, url: m.url }))
+  return [{ type: 'image', url: art.image_url }, ...extra]
+}
+
+export function GalleryGrid({
+  artworks,
+  mediaByArtwork = {},
+}: {
+  artworks: Artwork[]
+  mediaByArtwork?: Record<number, ArtworkMedia[]>
+}) {
   const [active, setActive] = useState<Artwork | null>(null)
 
   if (artworks.length === 0) {
@@ -59,15 +71,11 @@ export function GalleryGrid({ artworks }: { artworks: Artwork[] }) {
         >
           {active && (
             <div className="grid gap-0 md:grid-cols-[1.4fr_1fr]">
-              <div className="relative aspect-4/5 bg-muted md:aspect-auto">
-                <Image
-                  src={active.image_url || '/placeholder.svg'}
-                  alt={active.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                  className="object-cover"
-                />
-              </div>
+              <MediaCarousel
+                items={slidesFor(active, mediaByArtwork[active.id])}
+                alt={active.title}
+                className="aspect-4/5 md:aspect-auto"
+              />
               <div className="flex flex-col gap-4 p-6 md:p-8">
                 <div>
                   <DialogTitle className="font-serif text-2xl leading-tight">
