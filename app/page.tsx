@@ -61,7 +61,7 @@ export default async function HomePage() {
                 href="/about"
                 className="inline-flex items-center px-6 py-3 text-sm tracking-wide text-foreground underline-offset-4 hover:underline"
               >
-                Meet Luna
+                Meet Jackie
               </Link>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default async function HomePage() {
               />
             </div>
             <div className="absolute -bottom-4 -left-4 hidden bg-accent px-4 py-3 text-accent-foreground md:block">
-              <p className="font-serif text-xl leading-none">Luna</p>
+              <p className="font-serif text-xl leading-none">Jackie</p>
               <p className="text-[11px] uppercase tracking-widest">the artist</p>
             </div>
           </div>
