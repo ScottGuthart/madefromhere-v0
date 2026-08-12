@@ -3,6 +3,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { GalleryGrid } from '@/components/gallery-grid'
 import { CollectionsGrid } from '@/components/collections-grid'
 import type { MediaItem } from '@/components/media-carousel'
+import { slidesForArtwork } from '@/lib/media'
 import {
   getArtworks,
   getArtworkMediaByArtwork,
@@ -31,10 +32,7 @@ function slidesForCollection(
     slides.push({ type: 'image', url: collection.cover_image_url })
   }
   for (const piece of pieces) {
-    if (piece.image_url) slides.push({ type: 'image', url: piece.image_url })
-    for (const m of mediaByArtwork[piece.id] ?? []) {
-      slides.push({ type: m.media_type, url: m.url })
-    }
+    slides.push(...slidesForArtwork(piece, mediaByArtwork[piece.id]))
   }
   return slides
 }
