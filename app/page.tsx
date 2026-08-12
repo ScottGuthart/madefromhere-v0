@@ -39,10 +39,15 @@ export default async function HomePage() {
               priority
               className="mx-auto w-full max-w-[440px] md:mx-0"
             />
-            <p className="mt-4 max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
-              Luna turns her feelings into art &mdash; paintings, pottery, and
-              more. The thrill of the red dot, the patience of waiting for
-              dinner, the deep peace of an afternoon nap in the sun.
+            <p className="mt-4 max-w-lg text-pretty text-lg leading-relaxed text-muted-foreground">
+              Every piece begins with a place. Sea glass gathered from the
+              shoreline becomes a mosaic of that very beach. Water drawn from
+              the sound becomes the watercolor that captures it. Wildflowers
+              collected along the trail are preserved in resin, and leaves
+              found in the forest leave their imprint in clay. Whenever
+              possible, the work is created where it began, allowing each
+              piece to carry a tangible connection to the landscape that
+              inspired it.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
