@@ -49,6 +49,7 @@ export function MediaCarousel({
               src={item.url}
               controls={i === index}
               playsInline
+              muted
               preload={i === index ? 'auto' : 'metadata'}
               className="h-full w-full object-cover"
             />

@@ -3,19 +3,23 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-import { getArtworks, getShows, getSiteContent } from '@/lib/queries'
+import { MediaCarousel } from '@/components/media-carousel'
+import { getArtworks, getArtworkMediaByArtwork, getShows, getSiteContent } from '@/lib/queries'
+import { slidesForArtwork } from '@/lib/media'
 import { formatShowDate, isUpcoming } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const [artworks, shows, content] = await Promise.all([
+  const [artworks, mediaMap, shows, content] = await Promise.all([
     getArtworks(),
+    getArtworkMediaByArtwork(),
     getShows(),
     getSiteContent(),
   ])
 
   const featured = artworks.slice(0, 3)
+  const mediaByArtwork = Object.fromEntries(mediaMap)
   const upcoming = shows.filter((s) => isUpcoming(s.start_date, s.end_date))[0]
 
   return (
@@ -99,19 +103,20 @@ export default async function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-3">
             {featured.map((art) => (
-              <Link key={art.id} href="/gallery" className="group">
-                <div className="relative aspect-4/5 overflow-hidden bg-muted">
-                  <Image
-                    src={art.image_url || '/placeholder.svg'}
-                    alt={art.title}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                </div>
-                <h3 className="mt-3 font-serif text-lg">{art.title}</h3>
-                <p className="text-sm text-muted-foreground">{art.medium}</p>
-              </Link>
+              <div key={art.id} className="group">
+                <MediaCarousel
+                  items={slidesForArtwork(art, mediaByArtwork[art.id])}
+                  alt={art.title}
+                  className="aspect-4/5"
+                  imageSizes="(max-width: 640px) 100vw, 33vw"
+                />
+                <Link href="/gallery" className="mt-3 block">
+                  <h3 className="font-serif text-lg transition-colors group-hover:text-accent">
+                    {art.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{art.medium}</p>
+                </Link>
+              </div>
             ))}
           </div>
         </section>

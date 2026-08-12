@@ -3,14 +3,10 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { MediaCarousel, type MediaItem } from '@/components/media-carousel'
+import { MediaCarousel } from '@/components/media-carousel'
+import { slidesForArtwork } from '@/lib/media'
 import type { Artwork, ArtworkMedia } from '@/lib/types'
 import { cn } from '@/lib/utils'
-
-function slidesFor(art: Artwork, media: ArtworkMedia[] | undefined): MediaItem[] {
-  const extra: MediaItem[] = (media ?? []).map((m) => ({ type: m.media_type, url: m.url }))
-  return [{ type: 'image', url: art.image_url }, ...extra]
-}
 
 export function GalleryGrid({
   artworks,
@@ -72,7 +68,7 @@ export function GalleryGrid({
           {active && (
             <div className="grid gap-0 md:grid-cols-[1.4fr_1fr]">
               <MediaCarousel
-                items={slidesFor(active, mediaByArtwork[active.id])}
+                items={slidesForArtwork(active, mediaByArtwork[active.id])}
                 alt={active.title}
                 className="aspect-4/5 md:aspect-auto"
               />
