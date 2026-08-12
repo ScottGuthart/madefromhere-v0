@@ -24,6 +24,7 @@ import { uploadFile, mediaTypeFor } from '@/lib/blob-client'
 import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
@@ -140,7 +141,7 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
         </div>
         <input type="hidden" name="image_url" value={imageUrl} />
         <Field label="Upload image">
-          <Input type="file" accept="image/*" disabled={uploading} onChange={onFileChosen} />
+          <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
           {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
         </Field>
         <Field label="…or paste an image URL">
@@ -343,9 +344,8 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
         </div>
       )}
       <Field label="Add photos or videos">
-        <Input
+        <FileInput
           key={inputKey}
-          type="file"
           accept="image/*,video/*"
           multiple
           disabled={pending || uploading}
