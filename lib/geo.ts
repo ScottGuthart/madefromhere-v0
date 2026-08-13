@@ -34,3 +34,12 @@ export function mapEmbedUrl(lat: number, lng: number): string {
 export function mapLinkUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps?q=${lat},${lng}`
 }
+
+// Same keyless embed, but by a place name instead of coordinates — for when
+// someone pasted a shortened Google Maps link (maps.app.goo.gl/...), which
+// can't be resolved to coordinates client-side. Google's embed will search
+// for and center on the name itself, so this still gives a real preview
+// instead of just a bare link.
+export function mapEmbedUrlForQuery(query: string): string {
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=13&output=embed`
+}
