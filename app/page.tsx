@@ -3,9 +3,8 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-import { MediaCarousel } from '@/components/media-carousel'
+import { PieceRow } from '@/components/piece-row'
 import { getArtworks, getArtworkMediaByArtwork, getShows, getSiteContent } from '@/lib/queries'
-import { slidesForArtwork } from '@/lib/media'
 import { formatShowDate, isUpcoming } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
@@ -18,7 +17,7 @@ export default async function HomePage() {
     getSiteContent(),
   ])
 
-  const featured = artworks.slice(0, 3)
+  const featured = artworks.slice(0, 9)
   const mediaByArtwork = Object.fromEntries(mediaMap)
   const upcoming = shows.filter((s) => isUpcoming(s.start_date, s.end_date))[0]
 
@@ -101,27 +100,7 @@ export default async function HomePage() {
               See all &rarr;
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-3">
-            {featured.map((art) => (
-              <div key={art.id} className="group">
-                <MediaCarousel
-                  items={slidesForArtwork(art, mediaByArtwork[art.id])}
-                  alt={art.title}
-                  className="aspect-4/5"
-                  imageSizes="(max-width: 640px) 100vw, 33vw"
-                />
-                <Link
-                  href={art.collection_id ? `/gallery/${art.collection_id}` : '/gallery'}
-                  className="mt-3 block"
-                >
-                  <h3 className="font-serif text-lg transition-colors group-hover:text-accent">
-                    {art.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{art.medium}</p>
-                </Link>
-              </div>
-            ))}
-          </div>
+          <PieceRow artworks={featured} mediaByArtwork={mediaByArtwork} />
         </section>
 
         {/* Upcoming show banner */}
