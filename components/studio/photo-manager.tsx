@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 type PhotoSlot = {
-  key: 'hero_image' | 'about_image'
+  key: 'hero_image'
   title: string
   help: string
   fallback: string
@@ -24,12 +24,6 @@ const SLOTS: PhotoSlot[] = [
     title: 'Homepage portrait',
     help: 'The large photo next to the homepage introduction. A tall (portrait) photo works best.',
     fallback: '/luna/hero.png',
-  },
-  {
-    key: 'about_image',
-    title: 'About page photo',
-    help: 'The photo shown on the About page. A tall (portrait) photo works best.',
-    fallback: '/luna/about.png',
   },
 ]
 
@@ -117,15 +111,9 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
 export function PhotoManager({ content }: { content: SiteContent }) {
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted-foreground">
-        Upload your photos here. These replace the starter images across the
-        site right away.
-      </p>
-      <div className="grid gap-5 lg:grid-cols-2">
-        {SLOTS.map((slot) => (
-          <PhotoCard key={slot.key} slot={slot} current={content[slot.key]} />
-        ))}
-      </div>
+      {SLOTS.map((slot) => (
+        <PhotoCard key={slot.key} slot={slot} current={content[slot.key]} />
+      ))}
     </div>
   )
 }

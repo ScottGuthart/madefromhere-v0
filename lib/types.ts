@@ -34,6 +34,14 @@ export type ArtworkMedia = {
   created_at: string
 }
 
+export type AboutPhoto = {
+  id: number
+  media_type: 'image' | 'video'
+  url: string
+  sort_order: number
+  created_at: string
+}
+
 export type Show = {
   id: number
   title: string

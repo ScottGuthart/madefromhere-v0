@@ -4,6 +4,7 @@ import { ExternalLink } from 'lucide-react'
 import { isAuthenticated } from '@/lib/auth'
 import { logout } from '@/app/actions/auth'
 import {
+  getAboutPhotos,
   getArtworks,
   getArtworkMediaByArtwork,
   getCollections,
@@ -17,6 +18,7 @@ import { ArtworkManager } from '@/components/studio/artwork-manager'
 import { CollectionManager } from '@/components/studio/collection-manager'
 import { ShowManager } from '@/components/studio/show-manager'
 import { PhotoManager } from '@/components/studio/photo-manager'
+import { AboutPhotosManager } from '@/components/studio/about-photos-manager'
 import { ContentEditor } from '@/components/studio/content-editor'
 
 export const dynamic = 'force-dynamic'
@@ -30,12 +32,13 @@ export default async function StudioPage() {
     redirect('/login')
   }
 
-  const [artworks, collections, mediaMap, shows, content] = await Promise.all([
+  const [artworks, collections, mediaMap, shows, content, aboutPhotos] = await Promise.all([
     getArtworks(),
     getCollections(),
     getArtworkMediaByArtwork(),
     getShows(),
     getSiteContent(),
+    getAboutPhotos(),
   ])
   const mediaByArtwork = Object.fromEntries(mediaMap)
 
@@ -100,8 +103,9 @@ export default async function StudioPage() {
           <TabsContent value="shows" className="mt-6">
             <ShowManager shows={shows} />
           </TabsContent>
-          <TabsContent value="photos" className="mt-6">
+          <TabsContent value="photos" className="mt-6 space-y-6">
             <PhotoManager content={content} />
+            <AboutPhotosManager photos={aboutPhotos} />
           </TabsContent>
           <TabsContent value="content" className="mt-6">
             <ContentEditor content={content} />

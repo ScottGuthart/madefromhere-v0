@@ -1,6 +1,6 @@
 import { sql } from '@/lib/db'
 import { ensureSchema } from '@/lib/schema'
-import type { Artwork, ArtworkMedia, Collection, Show, SiteContent } from '@/lib/types'
+import type { AboutPhoto, Artwork, ArtworkMedia, Collection, Show, SiteContent } from '@/lib/types'
 
 export async function getArtworks(): Promise<Artwork[]> {
   await ensureSchema()
@@ -70,6 +70,15 @@ export async function getShows(): Promise<Show[]> {
     ORDER BY start_date ASC
   `
   return rows as Show[]
+}
+
+export async function getAboutPhotos(): Promise<AboutPhoto[]> {
+  await ensureSchema()
+  const rows = await sql`
+    SELECT * FROM about_photos
+    ORDER BY sort_order ASC, created_at ASC
+  `
+  return rows as AboutPhoto[]
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
