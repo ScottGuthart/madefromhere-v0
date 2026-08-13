@@ -110,7 +110,10 @@ export default async function HomePage() {
                   className="aspect-4/5"
                   imageSizes="(max-width: 640px) 100vw, 33vw"
                 />
-                <Link href="/gallery" className="mt-3 block">
+                <Link
+                  href={art.collection_id ? `/gallery/${art.collection_id}` : '/gallery'}
+                  className="mt-3 block"
+                >
                   <h3 className="font-serif text-lg transition-colors group-hover:text-accent">
                     {art.title}
                   </h3>
