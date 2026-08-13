@@ -27,6 +27,7 @@ import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileInput } from '@/components/ui/file-input'
+import { Dropzone } from '@/components/ui/dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
@@ -95,9 +96,7 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
   const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handleFile(file: File) {
     setPreview(URL.createObjectURL(file))
     setUploading(true)
     try {
@@ -108,6 +107,11 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
     } finally {
       setUploading(false)
     }
+  }
+
+  function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
   }
 
   function onSubmit(formData: FormData) {
@@ -132,15 +136,19 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
       className="grid gap-5 border border-border bg-card p-6 md:grid-cols-[220px_1fr]"
     >
       <div className="space-y-3">
-        <div className="relative flex aspect-4/5 items-center justify-center overflow-hidden border border-dashed border-border bg-muted">
+        <Dropzone
+          onFiles={(files) => handleFile(files[0])}
+          disabled={uploading}
+          className="relative flex aspect-4/5 items-center justify-center overflow-hidden border border-dashed border-border bg-muted"
+        >
           {preview ? (
             <Image src={preview} alt="Preview" fill className="object-cover" />
           ) : (
             <span className="px-4 text-center text-xs text-muted-foreground">
-              Image preview
+              Drag &amp; drop a photo here, or choose one below
             </span>
           )}
-        </div>
+        </Dropzone>
         <input type="hidden" name="image_url" value={imageUrl} />
         <Field label="Upload image">
           <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
@@ -298,10 +306,8 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
   const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
 
-  async function onFilesChosen(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    const chosen = Array.from(files)
+  async function handleFiles(chosen: File[]) {
+    if (chosen.length === 0) return
     setUploading(true)
     try {
       const items = await Promise.all(
@@ -329,6 +335,11 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
     }
   }
 
+  function onFilesChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (files && files.length > 0) handleFiles(Array.from(files))
+  }
+
   return (
     <div className="mt-4 border-t border-border pt-4">
       <p className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
@@ -339,28 +350,36 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
         here (collecting materials, timelapses, the finished piece) — people
         can scroll through all of it when they click the piece.
       </p>
-      {media.length > 0 && (
-        <div className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
-          {media.map((item, i) => (
-            <MediaThumb
-              key={item.id}
-              item={item}
-              isFirst={i === 0}
-              isLast={i === media.length - 1}
-            />
-          ))}
-        </div>
-      )}
-      <Field label="Add photos or videos">
-        <FileInput
-          key={inputKey}
-          accept="image/*,video/*"
-          multiple
-          disabled={pending || uploading}
-          onChange={onFilesChosen}
-        />
-        {uploading && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
-      </Field>
+      <Dropzone
+        onFiles={handleFiles}
+        disabled={pending || uploading}
+        className="border border-dashed border-border p-3"
+      >
+        {media.length > 0 && (
+          <div className="mb-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+            {media.map((item, i) => (
+              <MediaThumb
+                key={item.id}
+                item={item}
+                isFirst={i === 0}
+                isLast={i === media.length - 1}
+              />
+            ))}
+          </div>
+        )}
+        <Field label="Add photos or videos">
+          <FileInput
+            key={inputKey}
+            accept="image/*,video/*"
+            multiple
+            disabled={pending || uploading}
+            onChange={onFilesChosen}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            {uploading ? 'Uploading…' : 'Or drag & drop photos/videos here'}
+          </p>
+        </Field>
+      </Dropzone>
     </div>
   )
 }

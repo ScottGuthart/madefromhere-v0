@@ -15,6 +15,7 @@ import type { Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileInput } from '@/components/ui/file-input'
+import { Dropzone } from '@/components/ui/dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -81,9 +82,7 @@ function AddCollectionForm() {
   const [locationNote, setLocationNote] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
-  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handleFile(file: File) {
     setPreview(URL.createObjectURL(file))
     setUploading(true)
     try {
@@ -102,6 +101,11 @@ function AddCollectionForm() {
     } finally {
       setUploading(false)
     }
+  }
+
+  function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
   }
 
   function onMapUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -138,15 +142,19 @@ function AddCollectionForm() {
       className="grid gap-5 border border-border bg-card p-6 md:grid-cols-[220px_1fr]"
     >
       <div className="space-y-3">
-        <div className="relative flex aspect-4/5 items-center justify-center overflow-hidden border border-dashed border-border bg-muted">
+        <Dropzone
+          onFiles={(files) => handleFile(files[0])}
+          disabled={uploading}
+          className="relative flex aspect-4/5 items-center justify-center overflow-hidden border border-dashed border-border bg-muted"
+        >
           {preview ? (
             <Image src={preview} alt="Preview" fill className="object-cover" />
           ) : (
             <span className="px-4 text-center text-xs text-muted-foreground">
-              Photo of the place
+              Drag &amp; drop a photo here, or choose one below
             </span>
           )}
-        </div>
+        </Dropzone>
         <input type="hidden" name="cover_image_url" value={coverUrl} />
         <Field label="Upload photo">
           <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
@@ -195,9 +203,7 @@ function CollectionRow({ collection }: { collection: Collection }) {
   const [locationNote, setLocationNote] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
-  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handleFile(file: File) {
     setUploading(true)
     try {
       const [url, gps] = await Promise.all([
@@ -214,6 +220,11 @@ function CollectionRow({ collection }: { collection: Collection }) {
     } finally {
       setUploading(false)
     }
+  }
+
+  function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
   }
 
   function onMapUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -276,10 +287,18 @@ function CollectionRow({ collection }: { collection: Collection }) {
           <Input name="title" defaultValue={collection.title} required />
           <Textarea name="description" defaultValue={collection.description} rows={2} />
           <input type="hidden" name="cover_image_url" value={newCoverUrl} />
-          <Field label="Replace photo (optional)">
-            <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
-            {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
-          </Field>
+          <Dropzone
+            onFiles={(files) => handleFile(files[0])}
+            disabled={uploading}
+            className="border border-dashed border-border p-3"
+          >
+            <Field label="Replace photo (optional)">
+              <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
+              <p className="text-xs text-muted-foreground">
+                {uploading ? 'Uploading…' : 'Or drag & drop a photo here'}
+              </p>
+            </Field>
+          </Dropzone>
           <LocationFields
             coords={coords}
             mapUrlText={mapUrlText}
