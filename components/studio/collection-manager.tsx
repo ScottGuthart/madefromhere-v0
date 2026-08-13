@@ -2,13 +2,15 @@
 
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
-import { Plus, Trash2, Pencil, X } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, MapPin } from 'lucide-react'
 import {
   createCollection,
   updateCollection,
   deleteCollection,
 } from '@/app/actions/studio'
 import { uploadFile } from '@/lib/blob-client'
+import { extractGpsFromFile } from '@/lib/exif-client'
+import { parseGoogleMapsUrl } from '@/lib/geo'
 import type { Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +18,8 @@ import { FileInput } from '@/components/ui/file-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+
+type Coords = { lat: number; lng: number }
 
 function Field({
   label,
@@ -34,11 +38,47 @@ function Field({
   )
 }
 
+function LocationFields({
+  coords,
+  mapUrlText,
+  locationNote,
+  onMapUrlChange,
+}: {
+  coords: Coords | null
+  mapUrlText: string
+  locationNote: string | null
+  onMapUrlChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}) {
+  return (
+    <>
+      <Field label="Google Maps link (optional)">
+        <Input
+          type="text"
+          placeholder="Paste a Google Maps link — or we'll try your photo's location"
+          value={mapUrlText}
+          onChange={onMapUrlChange}
+        />
+        {locationNote && (
+          <p className="flex items-center gap-1 text-xs text-accent">
+            <MapPin className="size-3" /> {locationNote}
+          </p>
+        )}
+      </Field>
+      <input type="hidden" name="latitude" value={coords?.lat ?? ''} />
+      <input type="hidden" name="longitude" value={coords?.lng ?? ''} />
+      <input type="hidden" name="map_url" value={mapUrlText} />
+    </>
+  )
+}
+
 function AddCollectionForm() {
   const formRef = useRef<HTMLFormElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [coverUrl, setCoverUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [coords, setCoords] = useState<Coords | null>(null)
+  const [mapUrlText, setMapUrlText] = useState('')
+  const [locationNote, setLocationNote] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
@@ -47,12 +87,30 @@ function AddCollectionForm() {
     setPreview(URL.createObjectURL(file))
     setUploading(true)
     try {
-      setCoverUrl(await uploadFile(file, 'collections'))
+      const [url, gps] = await Promise.all([
+        uploadFile(file, 'collections'),
+        extractGpsFromFile(file),
+      ])
+      setCoverUrl(url)
+      if (gps) {
+        setCoords(gps)
+        setLocationNote('Location detected from this photo')
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
       setPreview(null)
     } finally {
       setUploading(false)
+    }
+  }
+
+  function onMapUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    setMapUrlText(value)
+    const parsed = parseGoogleMapsUrl(value)
+    if (parsed) {
+      setCoords(parsed)
+      setLocationNote('Location set from the link')
     }
   }
 
@@ -64,6 +122,9 @@ function AddCollectionForm() {
         formRef.current?.reset()
         setPreview(null)
         setCoverUrl('')
+        setCoords(null)
+        setMapUrlText('')
+        setLocationNote(null)
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Something went wrong')
       }
@@ -104,6 +165,12 @@ function AddCollectionForm() {
             placeholder="A few words about this place…"
           />
         </Field>
+        <LocationFields
+          coords={coords}
+          mapUrlText={mapUrlText}
+          locationNote={locationNote}
+          onMapUrlChange={onMapUrlChange}
+        />
         <div>
           <Button type="submit" disabled={pending || uploading}>
             <Plus className="size-4" />
@@ -119,6 +186,13 @@ function CollectionRow({ collection }: { collection: Collection }) {
   const [editing, setEditing] = useState(false)
   const [newCoverUrl, setNewCoverUrl] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [coords, setCoords] = useState<Coords | null>(
+    collection.latitude != null && collection.longitude != null
+      ? { lat: collection.latitude, lng: collection.longitude }
+      : null,
+  )
+  const [mapUrlText, setMapUrlText] = useState(collection.map_url ?? '')
+  const [locationNote, setLocationNote] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
   async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
@@ -126,11 +200,29 @@ function CollectionRow({ collection }: { collection: Collection }) {
     if (!file) return
     setUploading(true)
     try {
-      setNewCoverUrl(await uploadFile(file, 'collections'))
+      const [url, gps] = await Promise.all([
+        uploadFile(file, 'collections'),
+        extractGpsFromFile(file),
+      ])
+      setNewCoverUrl(url)
+      if (gps) {
+        setCoords(gps)
+        setLocationNote('Location detected from this photo')
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setUploading(false)
+    }
+  }
+
+  function onMapUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    setMapUrlText(value)
+    const parsed = parseGoogleMapsUrl(value)
+    if (parsed) {
+      setCoords(parsed)
+      setLocationNote('Location set from the link')
     }
   }
 
@@ -141,6 +233,7 @@ function CollectionRow({ collection }: { collection: Collection }) {
         toast.success('Place updated')
         setEditing(false)
         setNewCoverUrl('')
+        setLocationNote(null)
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Update failed')
       }
@@ -187,6 +280,12 @@ function CollectionRow({ collection }: { collection: Collection }) {
             <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
             {uploading && <p className="text-xs text-muted-foreground">Uploading…</p>}
           </Field>
+          <LocationFields
+            coords={coords}
+            mapUrlText={mapUrlText}
+            locationNote={locationNote}
+            onMapUrlChange={onMapUrlChange}
+          />
           <div className="flex gap-2">
             <Button type="submit" size="sm" disabled={pending || uploading}>
               Save
@@ -208,6 +307,11 @@ function CollectionRow({ collection }: { collection: Collection }) {
             {collection.description && (
               <p className="mt-1 line-clamp-2 max-w-md text-sm text-foreground/70">
                 {collection.description}
+              </p>
+            )}
+            {collection.latitude != null && collection.longitude != null && (
+              <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="size-3" /> Location saved
               </p>
             )}
           </div>
@@ -244,7 +348,8 @@ export function CollectionManager({ collections }: { collections: Collection[] }
       <p className="text-sm text-muted-foreground">
         Group your gallery by the place each piece came from. Add a photo of
         the location itself here — then assign pieces to it from the Gallery
-        tab.
+        tab. If your photo has location data, the map fills in
+        automatically; otherwise paste a Google Maps link.
       </p>
       <AddCollectionForm />
       <div className="space-y-3">

@@ -4,6 +4,9 @@ export type Collection = {
   description: string
   cover_image_url: string
   sort_order: number
+  latitude: number | null
+  longitude: number | null
+  map_url: string | null
   created_at: string
 }
 
@@ -14,6 +17,7 @@ export type Artwork = {
   image_url: string
   medium: string
   year: string
+  created_date: string | null
   status: 'available' | 'sold'
   sort_order: number
   collection_id: number | null

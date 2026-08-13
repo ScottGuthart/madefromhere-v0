@@ -21,6 +21,7 @@ import {
   reorderArtworkMedia,
 } from '@/app/actions/studio'
 import { uploadFile, mediaTypeFor } from '@/lib/blob-client'
+import { formatPieceDate, toDateInput } from '@/lib/format'
 import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -169,6 +170,12 @@ function AddArtworkForm({ collections }: { collections: Collection[] }) {
             <Input name="year" placeholder="2024" />
           </Field>
         </div>
+        <Field label="Exact date (optional)">
+          <Input type="date" name="created_date" />
+          <p className="text-xs text-muted-foreground">
+            If set, this is shown instead of the year.
+          </p>
+        </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Status">
             <Select name="status" defaultValue="available">
@@ -419,6 +426,9 @@ function ArtworkRow({
               <Input name="medium" defaultValue={art.medium} placeholder="Medium" />
               <Input name="year" defaultValue={art.year} placeholder="Year" />
             </div>
+            <Field label="Exact date (optional)">
+              <Input type="date" name="created_date" defaultValue={toDateInput(art.created_date)} />
+            </Field>
             <div className="grid grid-cols-2 gap-3">
               <Select name="status" defaultValue={art.status}>
                 <SelectTrigger>
@@ -462,7 +472,7 @@ function ArtworkRow({
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {[art.medium, art.year].filter(Boolean).join(', ')}
+                {[art.medium, formatPieceDate(art.created_date, art.year)].filter(Boolean).join(', ')}
               </p>
               <p className="mt-0.5 text-xs uppercase tracking-widest text-muted-foreground">
                 {collectionTitle ?? 'No place assigned'}
