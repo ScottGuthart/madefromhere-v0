@@ -16,6 +16,7 @@ import {
   createArtwork,
   updateArtwork,
   deleteArtwork,
+  reorderArtwork,
   addArtworkMedia,
   deleteArtworkMedia,
   reorderArtworkMedia,
@@ -368,14 +369,31 @@ function ArtworkRow({
   art,
   collections,
   media,
+  isFirst,
+  isLast,
 }: {
   art: Artwork
   collections: Collection[]
   media: ArtworkMedia[]
+  isFirst: boolean
+  isLast: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
   const [pending, startTransition] = useTransition()
+
+  function move(direction: 'up' | 'down') {
+    const fd = new FormData()
+    fd.set('id', String(art.id))
+    fd.set('direction', direction)
+    startTransition(async () => {
+      try {
+        await reorderArtwork(fd)
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Reorder failed')
+      }
+    })
+  }
 
   function onUpdate(formData: FormData) {
     normalizeCollectionId(formData)
@@ -488,6 +506,26 @@ function ArtworkRow({
                 type="button"
                 size="icon"
                 variant="ghost"
+                disabled={pending || isFirst}
+                onClick={() => move('up')}
+                aria-label="Move earlier"
+              >
+                <ArrowUp className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                disabled={pending || isLast}
+                onClick={() => move('down')}
+                aria-label="Move later"
+              >
+                <ArrowDown className="size-4" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
                 onClick={() => setShowMedia((v) => !v)}
                 aria-label="Manage carousel media"
               >
@@ -535,15 +573,23 @@ export function ArtworkManager({
     <div className="space-y-8">
       <AddArtworkForm collections={collections} />
       <div className="space-y-3">
-        <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          {artworks.length} piece{artworks.length === 1 ? '' : 's'} in the gallery
-        </h3>
-        {artworks.map((art) => (
+        <div>
+          <h3 className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            {artworks.length} piece{artworks.length === 1 ? '' : 's'} in the gallery
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Use the arrows to reorder — this also controls the order on the
+            homepage&apos;s Recent work and the Gallery page.
+          </p>
+        </div>
+        {artworks.map((art, i) => (
           <ArtworkRow
             key={art.id}
             art={art}
             collections={collections}
             media={mediaByArtwork[art.id] ?? []}
+            isFirst={i === 0}
+            isLast={i === artworks.length - 1}
           />
         ))}
       </div>

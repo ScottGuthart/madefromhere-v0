@@ -21,13 +21,13 @@ const SLOTS: PhotoSlot[] = [
   {
     key: 'hero_image',
     title: 'Homepage portrait',
-    help: 'The large photo of Luna on the homepage. A tall (portrait) photo works best.',
+    help: 'The large photo next to the homepage introduction. A tall (portrait) photo works best.',
     fallback: '/luna/hero.png',
   },
   {
     key: 'about_image',
     title: 'About page photo',
-    help: 'The photo of Luna shown on the About page. A tall (portrait) photo works best.',
+    help: 'The photo shown on the About page. A tall (portrait) photo works best.',
     fallback: '/luna/about.png',
   },
 ]
@@ -109,7 +109,7 @@ export function PhotoManager({ content }: { content: SiteContent }) {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Upload real photos of Luna. These replace the starter images across the
+        Upload your photos here. These replace the starter images across the
         site right away.
       </p>
       <div className="grid gap-5 lg:grid-cols-2">

@@ -15,11 +15,16 @@ export function MediaCarousel({
   alt,
   className,
   imageSizes = '(max-width: 768px) 100vw, 60vw',
+  fit = 'cover',
 }: {
   items: MediaItem[]
   alt: string
   className?: string
   imageSizes?: string
+  /** 'cover' crops to fill the box (grid tiles); 'contain' letterboxes so
+   * nothing is ever cropped — use this wherever the whole photo/video
+   * matters more than a tidy fixed shape, e.g. a piece's own detail view. */
+  fit?: 'cover' | 'contain'
 }) {
   const [index, setIndex] = useState(0)
   const safeItems = items.length > 0 ? items : [{ type: 'image' as const, url: '' }]
@@ -51,7 +56,7 @@ export function MediaCarousel({
               playsInline
               muted
               preload={i === index ? 'auto' : 'metadata'}
-              className="h-full w-full object-cover"
+              className={cn('h-full w-full', fit === 'contain' ? 'object-contain' : 'object-cover')}
             />
           ) : (
             <Image
@@ -60,7 +65,7 @@ export function MediaCarousel({
               fill
               sizes={imageSizes}
               priority={i === index}
-              className="object-cover"
+              className={fit === 'contain' ? 'object-contain' : 'object-cover'}
             />
           )}
         </div>

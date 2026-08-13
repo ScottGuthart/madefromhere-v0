@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Shows — From Here Studio',
-  description: 'Upcoming and past exhibitions featuring Luna the cat.',
+  description: 'Upcoming and past exhibitions of original, place-based art.',
 }
 
 function ShowRow({ show, past = false }: { show: Show; past?: boolean }) {
@@ -74,8 +74,7 @@ export default async function ShowsPage() {
             Shows
           </h1>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            Where to see Luna&apos;s work in person. Come say hi &mdash; she
-            loves a good crowd.
+            Where to see the work in person. Come say hi.
           </p>
         </header>
 

@@ -185,6 +185,34 @@ export async function deleteArtwork(formData: FormData) {
   revalidateAll()
 }
 
+// Swaps a piece with its neighbor in the same order used everywhere the
+// gallery is displayed (getArtworks' ORDER BY) — so this one control
+// reorders it on the homepage's Recent work, the Gallery page, and within
+// its place, all at once.
+export async function reorderArtwork(formData: FormData) {
+  await requireAuth()
+  await ensureSchema()
+
+  const id = Number(formData.get('id'))
+  const direction = String(formData.get('direction') ?? '')
+
+  const all = (await sql`
+    SELECT id, sort_order FROM artworks
+    ORDER BY sort_order ASC, created_at DESC
+  `) as { id: number; sort_order: number }[]
+
+  const index = all.findIndex((a) => a.id === id)
+  const swapIndex = direction === 'up' ? index - 1 : index + 1
+  if (index === -1 || swapIndex < 0 || swapIndex >= all.length) return
+
+  const neighbor = all[swapIndex]
+  const self = all[index]
+
+  await sql`UPDATE artworks SET sort_order = ${neighbor.sort_order} WHERE id = ${self.id}`
+  await sql`UPDATE artworks SET sort_order = ${self.sort_order} WHERE id = ${neighbor.id}`
+  revalidateAll()
+}
+
 /* ---------- Artwork media (carousel photos/videos) ---------- */
 
 export async function addArtworkMedia(formData: FormData) {
@@ -312,7 +340,7 @@ export async function deleteShow(formData: FormData) {
   revalidateAll()
 }
 
-/* ---------- Luna photos ---------- */
+/* ---------- Homepage / about photos ---------- */
 
 const PHOTO_KEYS = ['hero_image', 'about_image'] as const
 

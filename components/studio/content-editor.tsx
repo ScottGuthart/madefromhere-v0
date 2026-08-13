@@ -49,14 +49,14 @@ export function ContentEditor({ content }: { content: SiteContent }) {
         <Input
           name="hero_tagline"
           defaultValue={content.hero_tagline ?? ''}
-          placeholder="Original art by a very good cat"
+          placeholder="Original art rooted in place"
         />
       </Field>
       <Field label="About page title">
         <Input
           name="about_title"
           defaultValue={content.about_title ?? ''}
-          placeholder="Meet Luna"
+          placeholder="Meet Jackie"
         />
       </Field>
       <Field label="About page text (one paragraph per line)">
