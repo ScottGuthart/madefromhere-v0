@@ -7,6 +7,7 @@ import { uploadFile } from '@/lib/blob-client'
 import type { SiteContent } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/file-input'
+import { Dropzone } from '@/components/ui/dropzone'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
@@ -40,9 +41,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
 
   const shown = preview ?? current ?? slot.fallback
 
-  async function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handleFile(file: File) {
     setPreview(URL.createObjectURL(file))
     setUploading(true)
     try {
@@ -53,6 +52,11 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
     } finally {
       setUploading(false)
     }
+  }
+
+  function onFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
   }
 
   function onSubmit(formData: FormData) {
@@ -75,7 +79,11 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
     >
       <input type="hidden" name="key" value={slot.key} />
       <input type="hidden" name="image_url" value={imageUrl} />
-      <div className="relative aspect-4/5 w-full shrink-0 overflow-hidden bg-muted sm:w-40">
+      <Dropzone
+        onFiles={(files) => handleFile(files[0])}
+        disabled={uploading}
+        className="relative aspect-4/5 w-full shrink-0 overflow-hidden bg-muted sm:w-40"
+      >
         <Image
           src={shown}
           alt={`Current ${slot.title.toLowerCase()}`}
@@ -83,7 +91,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
           sizes="160px"
           className="object-cover"
         />
-      </div>
+      </Dropzone>
       <div className="flex flex-1 flex-col gap-3">
         <div>
           <h3 className="font-serif text-lg">{slot.title}</h3>
@@ -95,6 +103,7 @@ function PhotoCard({ slot, current }: { slot: PhotoSlot; current?: string }) {
               Choose a new photo
             </Label>
             <FileInput accept="image/*" disabled={uploading} onChange={onFileChosen} />
+            <p className="text-xs text-muted-foreground">Or drag &amp; drop onto the photo</p>
           </div>
           <Button type="submit" disabled={pending || uploading}>
             {uploading ? 'Uploading…' : pending ? 'Saving…' : 'Save photo'}
