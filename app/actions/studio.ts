@@ -321,6 +321,74 @@ export async function reorderArtworkMedia(formData: FormData) {
   revalidateAll()
 }
 
+/* ---------- About page carousel photos ---------- */
+
+export async function addAboutPhotos(formData: FormData) {
+  await requireAuth()
+  await ensureSchema()
+
+  const itemsRaw = String(formData.get('items') ?? '[]')
+  let items: { url: string; media_type: 'image' | 'video' }[]
+  try {
+    items = JSON.parse(itemsRaw)
+  } catch {
+    items = []
+  }
+  items = items.filter((i) => i && typeof i.url === 'string' && i.url.trim())
+  if (items.length === 0) {
+    throw new Error('Choose at least one photo or video')
+  }
+
+  const maxRows = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM about_photos`
+  let nextOrder = Number((maxRows[0] as { max: number }).max) + 1
+
+  for (const item of items) {
+    const mediaType = item.media_type === 'video' ? 'video' : 'image'
+    await sql`
+      INSERT INTO about_photos (media_type, url, sort_order)
+      VALUES (${mediaType}, ${item.url}, ${nextOrder})
+    `
+    nextOrder += 1
+  }
+  revalidateAll()
+}
+
+export async function deleteAboutPhoto(formData: FormData) {
+  await requireAuth()
+  await ensureSchema()
+  const id = Number(formData.get('id'))
+
+  const rows = await sql`SELECT url FROM about_photos WHERE id = ${id}`
+  await deleteBlobIfOwned((rows[0] as { url: string })?.url)
+
+  await sql`DELETE FROM about_photos WHERE id = ${id}`
+  revalidateAll()
+}
+
+export async function reorderAboutPhoto(formData: FormData) {
+  await requireAuth()
+  await ensureSchema()
+
+  const id = Number(formData.get('id'))
+  const direction = String(formData.get('direction') ?? '')
+
+  const all = (await sql`
+    SELECT id, sort_order FROM about_photos
+    ORDER BY sort_order ASC, created_at ASC
+  `) as { id: number; sort_order: number }[]
+
+  const index = all.findIndex((p) => p.id === id)
+  const swapIndex = direction === 'up' ? index - 1 : index + 1
+  if (index === -1 || swapIndex < 0 || swapIndex >= all.length) return
+
+  const neighbor = all[swapIndex]
+  const self = all[index]
+
+  await sql`UPDATE about_photos SET sort_order = ${neighbor.sort_order} WHERE id = ${self.id}`
+  await sql`UPDATE about_photos SET sort_order = ${self.sort_order} WHERE id = ${neighbor.id}`
+  revalidateAll()
+}
+
 /* ---------- Shows ---------- */
 
 export async function createShow(formData: FormData) {

@@ -49,6 +49,15 @@ async function runMigrations() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `
+  await sql`
+    CREATE TABLE IF NOT EXISTS about_photos (
+      id SERIAL PRIMARY KEY,
+      media_type TEXT NOT NULL DEFAULT 'image',
+      url TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `
 }
 
 export function ensureSchema(): Promise<void> {
