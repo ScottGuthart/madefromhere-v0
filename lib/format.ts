@@ -40,6 +40,20 @@ export function toDateInput(value?: DateInput | null): string {
   return String(value).slice(0, 10)
 }
 
+// Prefers an exact date when a piece has one (formatted as "August 12,
+// 2026"); falls back to the free-text year field for older pieces that
+// only ever had a year.
+export function formatPieceDate(createdDate?: DateInput | null, year?: string | null): string {
+  if (createdDate) {
+    return parseDate(createdDate).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+  return year ?? ''
+}
+
 export function isUpcoming(start: DateInput, end?: DateInput | null): boolean {
   const ref = end ? parseDate(end) : parseDate(start)
   const today = new Date()

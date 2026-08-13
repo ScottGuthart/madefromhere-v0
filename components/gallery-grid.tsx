@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { MediaCarousel } from '@/components/media-carousel'
 import { slidesForArtwork } from '@/lib/media'
+import { formatPieceDate } from '@/lib/format'
 import type { Artwork, ArtworkMedia } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -52,7 +53,7 @@ export function GalleryGrid({
             <div className="mt-3 flex items-baseline justify-between gap-3">
               <h3 className="font-serif text-lg leading-tight">{art.title}</h3>
               <span className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground">
-                {art.year}
+                {formatPieceDate(art.created_date, art.year)}
               </span>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">{art.medium}</p>
@@ -78,8 +79,9 @@ export function GalleryGrid({
                     {active.title}
                   </DialogTitle>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {active.medium}
-                    {active.year ? `, ${active.year}` : ''}
+                    {[active.medium, formatPieceDate(active.created_date, active.year)]
+                      .filter(Boolean)
+                      .join(', ')}
                   </p>
                 </div>
                 <span

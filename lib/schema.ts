@@ -23,6 +23,22 @@ async function runMigrations() {
       REFERENCES collections(id) ON DELETE SET NULL
   `
   await sql`
+    ALTER TABLE artworks
+      ADD COLUMN IF NOT EXISTS created_date DATE
+  `
+  await sql`
+    ALTER TABLE collections
+      ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION
+  `
+  await sql`
+    ALTER TABLE collections
+      ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION
+  `
+  await sql`
+    ALTER TABLE collections
+      ADD COLUMN IF NOT EXISTS map_url TEXT
+  `
+  await sql`
     CREATE TABLE IF NOT EXISTS artwork_media (
       id SERIAL PRIMARY KEY,
       artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,

@@ -31,6 +31,13 @@ async function deleteBlobIfOwned(url: string | null | undefined) {
   }
 }
 
+function parseCoord(value: FormDataEntryValue | null): number | null {
+  const s = String(value ?? '').trim()
+  if (!s) return null
+  const n = Number(s)
+  return Number.isFinite(n) ? n : null
+}
+
 /* ---------- Collections ----------
  *
  * Photo/video uploads happen client-side (see lib/blob-client.ts + the
@@ -46,13 +53,16 @@ export async function createCollection(formData: FormData) {
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
   const coverUrl = String(formData.get('cover_image_url') ?? '').trim()
+  const latitude = parseCoord(formData.get('latitude'))
+  const longitude = parseCoord(formData.get('longitude'))
+  const mapUrl = String(formData.get('map_url') ?? '').trim() || null
 
   const maxRows = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM collections`
   const sortOrder = Number((maxRows[0] as { max: number }).max) + 1
 
   await sql`
-    INSERT INTO collections (title, description, cover_image_url, sort_order)
-    VALUES (${title}, ${description}, ${coverUrl}, ${sortOrder})
+    INSERT INTO collections (title, description, cover_image_url, sort_order, latitude, longitude, map_url)
+    VALUES (${title}, ${description}, ${coverUrl}, ${sortOrder}, ${latitude}, ${longitude}, ${mapUrl})
   `
   revalidateAll()
 }
@@ -65,6 +75,9 @@ export async function updateCollection(formData: FormData) {
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
   const newCoverUrl = String(formData.get('cover_image_url') ?? '').trim()
+  const latitude = parseCoord(formData.get('latitude'))
+  const longitude = parseCoord(formData.get('longitude'))
+  const mapUrl = String(formData.get('map_url') ?? '').trim() || null
 
   if (newCoverUrl) {
     const rows = await sql`SELECT cover_image_url FROM collections WHERE id = ${id}`
@@ -72,13 +85,15 @@ export async function updateCollection(formData: FormData) {
 
     await sql`
       UPDATE collections
-      SET title = ${title}, description = ${description}, cover_image_url = ${newCoverUrl}
+      SET title = ${title}, description = ${description}, cover_image_url = ${newCoverUrl},
+          latitude = ${latitude}, longitude = ${longitude}, map_url = ${mapUrl}
       WHERE id = ${id}
     `
   } else {
     await sql`
       UPDATE collections
-      SET title = ${title}, description = ${description}
+      SET title = ${title}, description = ${description},
+          latitude = ${latitude}, longitude = ${longitude}, map_url = ${mapUrl}
       WHERE id = ${id}
     `
   }
@@ -114,6 +129,7 @@ export async function createArtwork(formData: FormData) {
   const description = String(formData.get('description') ?? '').trim()
   const medium = String(formData.get('medium') ?? '').trim()
   const year = String(formData.get('year') ?? '').trim()
+  const createdDate = String(formData.get('created_date') ?? '').trim() || null
   const status = String(formData.get('status') ?? 'available')
   const collectionRaw = String(formData.get('collection_id') ?? '').trim()
   const collectionId = collectionRaw ? Number(collectionRaw) : null
@@ -122,8 +138,8 @@ export async function createArtwork(formData: FormData) {
   const sortOrder = Number((maxRows[0] as { max: number }).max) + 1
 
   await sql`
-    INSERT INTO artworks (title, description, image_url, medium, year, status, sort_order, collection_id)
-    VALUES (${title}, ${description}, ${imageUrl}, ${medium}, ${year}, ${status}, ${sortOrder}, ${collectionId})
+    INSERT INTO artworks (title, description, image_url, medium, year, created_date, status, sort_order, collection_id)
+    VALUES (${title}, ${description}, ${imageUrl}, ${medium}, ${year}, ${createdDate}, ${status}, ${sortOrder}, ${collectionId})
   `
   revalidateAll()
 }
@@ -137,6 +153,7 @@ export async function updateArtwork(formData: FormData) {
   const description = String(formData.get('description') ?? '').trim()
   const medium = String(formData.get('medium') ?? '').trim()
   const year = String(formData.get('year') ?? '').trim()
+  const createdDate = String(formData.get('created_date') ?? '').trim() || null
   const status = String(formData.get('status') ?? 'available')
   const collectionRaw = String(formData.get('collection_id') ?? '').trim()
   const collectionId = collectionRaw ? Number(collectionRaw) : null
@@ -144,7 +161,7 @@ export async function updateArtwork(formData: FormData) {
   await sql`
     UPDATE artworks
     SET title = ${title}, description = ${description}, medium = ${medium},
-        year = ${year}, status = ${status}, collection_id = ${collectionId}
+        year = ${year}, created_date = ${createdDate}, status = ${status}, collection_id = ${collectionId}
     WHERE id = ${id}
   `
   revalidateAll()
