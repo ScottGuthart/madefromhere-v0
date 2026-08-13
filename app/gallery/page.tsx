@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Gallery — From Here Studio',
-  description: 'Browse original art — paintings, pottery, and more — by Luna the cat.',
+  description: 'Browse original art, organized by the places that inspired it.',
 }
 
 // The place's own photo, then every piece made there (its main image, then

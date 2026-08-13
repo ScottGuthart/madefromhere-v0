@@ -32,8 +32,8 @@ export default async function HomePage() {
           <div>
             <h1 className="sr-only">
               From Here Studio &mdash;{' '}
-              {content.hero_tagline ?? 'Made From Here'}. Original art by Luna the
-              cat.
+              {content.hero_tagline ?? 'Made From Here'}. Original art rooted in
+              place.
             </h1>
             <Image
               src="/brand/from-here-studio.png"
@@ -74,7 +74,7 @@ export default async function HomePage() {
             <div className="relative aspect-4/5 overflow-hidden bg-muted">
               <Image
                 src={content.hero_image ?? '/luna/hero.png'}
-                alt="Luna the cat in her art studio with paint on her paws"
+                alt="Jackie in her art studio"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"

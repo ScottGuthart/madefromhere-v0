@@ -74,7 +74,7 @@ export default async function StudioPage() {
             Welcome back, Jackie
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Manage Luna&apos;s gallery, shows, and site content.
+            Manage the gallery, shows, and site content.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default async function StudioPage() {
             <TabsTrigger value="places">Places</TabsTrigger>
             <TabsTrigger value="artwork">Gallery</TabsTrigger>
             <TabsTrigger value="shows">Shows</TabsTrigger>
-            <TabsTrigger value="photos">Luna&apos;s photos</TabsTrigger>
+            <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="content">Site content</TabsTrigger>
           </TabsList>
 

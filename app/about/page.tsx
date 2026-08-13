@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'About — From Here Studio',
-  description: 'Meet Luna, the cat behind the art.',
+  description: 'Meet Jackie, the artist behind From Here Studio.',
 }
 
 export default async function AboutPage() {
   const content = await getSiteContent()
-  const title = content.about_title ?? 'Meet Luna'
+  const title = content.about_title ?? 'Meet Jackie'
   const body = content.about_body ?? ''
   const paragraphs = body.split('\n').filter((p) => p.trim().length > 0)
 
@@ -24,7 +24,7 @@ export default async function AboutPage() {
           <div className="relative aspect-4/5 overflow-hidden bg-muted md:sticky md:top-24 md:self-start">
             <Image
               src={content.about_image ?? '/luna/about.png'}
-              alt="Luna standing on a painted canvas in her studio"
+              alt="Jackie in her studio"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
@@ -42,33 +42,6 @@ export default async function AboutPage() {
                 <p key={i}>{p}</p>
               ))}
             </div>
-
-            <dl className="mt-10 grid grid-cols-2 gap-6 border-t border-border pt-8">
-              <div>
-                <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Species
-                </dt>
-                <dd className="mt-1 font-serif text-xl">Domestic Cat</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Mediums
-                </dt>
-                <dd className="mt-1 font-serif text-xl">Paint, clay &amp; paw</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Working since
-                </dt>
-                <dd className="mt-1 font-serif text-xl">2022</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Studio manager
-                </dt>
-                <dd className="mt-1 font-serif text-xl">Jackie</dd>
-              </div>
-            </dl>
           </div>
         </div>
       </main>

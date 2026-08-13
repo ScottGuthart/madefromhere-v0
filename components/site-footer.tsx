@@ -10,8 +10,7 @@ export function SiteFooter({ email }: { email?: string }) {
             Art rooted in place
           </p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Original art &mdash; paintings, pottery, and more &mdash; by Luna, a
-            cat with a lot of feelings and a little bit of paint on her nose.
+            Original art rooted in place &mdash; made where it began.
           </p>
         </div>
         <div className="flex flex-col gap-1 text-sm text-muted-foreground md:items-end">
@@ -32,7 +31,7 @@ export function SiteFooter({ email }: { email?: string }) {
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground/70">
-            &copy; {new Date().getFullYear()} From Here Studio. Good cat.
+            &copy; {new Date().getFullYear()} From Here Studio.
           </p>
         </div>
       </div>

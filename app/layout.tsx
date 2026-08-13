@@ -21,7 +21,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: 'From Here Studio — Art Rooted in Place',
   description:
-    'From Here Studio is the home of Luna, a cat whose expressive art — paintings, pottery, and more — is rooted in place. Browse the gallery and upcoming shows.',
+    'From Here Studio is home to original art rooted in place. Browse the gallery and upcoming shows.',
   generator: 'v0.app',
 }
 

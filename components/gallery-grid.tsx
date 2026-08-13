@@ -64,14 +64,18 @@ export function GalleryGrid({
       <Dialog open={!!active} onOpenChange={(o) => !o && setActive(null)}>
         <DialogContent
           showCloseButton
-          className="max-w-4xl overflow-hidden p-0 sm:rounded-none"
+          className="max-h-[90vh] max-w-2xl overflow-x-hidden overflow-y-auto p-0 sm:rounded-none"
         >
           {active && (
-            <div className="grid gap-0 md:grid-cols-[1.4fr_1fr]">
+            <div className="flex flex-col">
+              {/* "contain" so the full photo/video is always visible —
+               * nothing gets cropped to force a fixed shape, matching
+               * whatever it was actually shot as (portrait or landscape). */}
               <MediaCarousel
                 items={slidesForArtwork(active, mediaByArtwork[active.id])}
                 alt={active.title}
-                className="aspect-4/5 md:aspect-auto"
+                className="h-[45vh] sm:h-[55vh]"
+                fit="contain"
               />
               <div className="flex flex-col gap-4 p-6 md:p-8">
                 <div>
@@ -100,7 +104,7 @@ export function GalleryGrid({
                 {active.status === 'available' && (
                   <a
                     href="mailto:hello@fromherestudio.art"
-                    className="mt-auto inline-flex w-fit items-center border border-foreground px-4 py-2 text-sm tracking-wide transition-colors hover:bg-foreground hover:text-background"
+                    className="inline-flex w-fit items-center border border-foreground px-4 py-2 text-sm tracking-wide transition-colors hover:bg-foreground hover:text-background"
                   >
                     Inquire about this piece
                   </a>
