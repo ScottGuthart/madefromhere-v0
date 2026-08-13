@@ -27,8 +27,12 @@ export function parseGoogleMapsUrl(input: string): { lat: number; lng: number } 
 }
 
 // A keyless embeddable map (no Google API key / billing account needed).
+// `ll=` sets the center/zoom reliably; `q=` on its own is what was causing
+// the zoom level to get ignored and fall back to a whole-world view — `ll`
+// pins that down while `q` still drops the marker at the exact spot.
+// z=14 is roughly a 2–3 mile view across.
 export function mapEmbedUrl(lat: number, lng: number): string {
-  return `https://maps.google.com/maps?q=${lat},${lng}&z=14&output=embed`
+  return `https://maps.google.com/maps?ll=${lat},${lng}&q=${lat},${lng}&z=14&output=embed`
 }
 
 export function mapLinkUrl(lat: number, lng: number): string {
@@ -41,5 +45,5 @@ export function mapLinkUrl(lat: number, lng: number): string {
 // for and center on the name itself, so this still gives a real preview
 // instead of just a bare link.
 export function mapEmbedUrlForQuery(query: string): string {
-  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=13&output=embed`
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`
 }
