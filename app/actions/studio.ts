@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { sql } from '@/lib/db'
 import { ensureSchema } from '@/lib/schema'
 import { isAuthenticated } from '@/lib/auth'
+import { parseGoogleMapsUrl } from '@/lib/geo'
 
 async function requireAuth() {
   if (!(await isAuthenticated())) {
@@ -38,6 +39,21 @@ function parseCoord(value: FormDataEntryValue | null): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+// The browser can't follow a shortened Google Maps link (maps.app.goo.gl/...
+// — what the phone's Share sheet usually gives you) to get real
+// coordinates out of it; that's a cross-origin redirect the browser won't
+// expose. The server has no such restriction, so if the client didn't
+// already resolve coordinates, follow the link here as a fallback.
+async function resolveMapUrlCoords(url: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(url, { redirect: 'follow' })
+    res.body?.cancel().catch(() => {})
+    return parseGoogleMapsUrl(res.url)
+  } catch {
+    return null
+  }
+}
+
 /* ---------- Collections ----------
  *
  * Photo/video uploads happen client-side (see lib/blob-client.ts + the
@@ -53,9 +69,17 @@ export async function createCollection(formData: FormData) {
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
   const coverUrl = String(formData.get('cover_image_url') ?? '').trim()
-  const latitude = parseCoord(formData.get('latitude'))
-  const longitude = parseCoord(formData.get('longitude'))
+  let latitude = parseCoord(formData.get('latitude'))
+  let longitude = parseCoord(formData.get('longitude'))
   const mapUrl = String(formData.get('map_url') ?? '').trim() || null
+
+  if (latitude == null && longitude == null && mapUrl) {
+    const resolved = await resolveMapUrlCoords(mapUrl)
+    if (resolved) {
+      latitude = resolved.lat
+      longitude = resolved.lng
+    }
+  }
 
   const maxRows = await sql`SELECT COALESCE(MAX(sort_order), 0) AS max FROM collections`
   const sortOrder = Number((maxRows[0] as { max: number }).max) + 1
@@ -75,9 +99,17 @@ export async function updateCollection(formData: FormData) {
   const title = String(formData.get('title') ?? '').trim() || 'Untitled place'
   const description = String(formData.get('description') ?? '').trim()
   const newCoverUrl = String(formData.get('cover_image_url') ?? '').trim()
-  const latitude = parseCoord(formData.get('latitude'))
-  const longitude = parseCoord(formData.get('longitude'))
+  let latitude = parseCoord(formData.get('latitude'))
+  let longitude = parseCoord(formData.get('longitude'))
   const mapUrl = String(formData.get('map_url') ?? '').trim() || null
+
+  if (latitude == null && longitude == null && mapUrl) {
+    const resolved = await resolveMapUrlCoords(mapUrl)
+    if (resolved) {
+      latitude = resolved.lat
+      longitude = resolved.lng
+    }
+  }
 
   if (newCoverUrl) {
     const rows = await sql`SELECT cover_image_url FROM collections WHERE id = ${id}`
