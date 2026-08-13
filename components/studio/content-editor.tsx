@@ -52,6 +52,18 @@ export function ContentEditor({ content }: { content: SiteContent }) {
           placeholder="Original art rooted in place"
         />
       </Field>
+      <Field label="Homepage introduction">
+        <Textarea
+          name="hero_intro"
+          defaultValue={content.hero_intro ?? ''}
+          placeholder="Every piece begins with a place…"
+          rows={6}
+        />
+        <p className="text-xs text-muted-foreground">
+          The paragraph under the logo on the homepage. Leave blank to use
+          the default text.
+        </p>
+      </Field>
       <Field label="About page title">
         <Input
           name="about_title"

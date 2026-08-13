@@ -9,6 +9,8 @@ import { formatShowDate, isUpcoming } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
 
+const DEFAULT_HERO_INTRO = `Every piece begins with a place. Sea glass gathered from the shoreline becomes a mosaic of that very beach. Water drawn from the sound becomes the watercolor that captures it. Wildflowers collected along the trail are preserved in resin, and leaves found in the forest leave their imprint in clay. Whenever possible, the work is created where it began, allowing each piece to carry a tangible connection to the landscape that inspired it.`
+
 export default async function HomePage() {
   const [artworks, mediaMap, shows, content] = await Promise.all([
     getArtworks(),
@@ -20,6 +22,11 @@ export default async function HomePage() {
   const featured = artworks.slice(0, 9)
   const mediaByArtwork = Object.fromEntries(mediaMap)
   const upcoming = shows.filter((s) => isUpcoming(s.start_date, s.end_date))[0]
+  // `||` (not `??`) on purpose: saving the field blank in the Studio should
+  // fall back to the default text, not render an empty paragraph.
+  const heroParagraphs = (content.hero_intro?.trim() || DEFAULT_HERO_INTRO)
+    .split('\n')
+    .filter((p) => p.trim().length > 0)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -42,16 +49,11 @@ export default async function HomePage() {
               priority
               className="mx-auto w-full max-w-[440px] md:mx-0"
             />
-            <p className="mt-4 max-w-lg text-pretty text-lg leading-relaxed text-muted-foreground">
-              Every piece begins with a place. Sea glass gathered from the
-              shoreline becomes a mosaic of that very beach. Water drawn from
-              the sound becomes the watercolor that captures it. Wildflowers
-              collected along the trail are preserved in resin, and leaves
-              found in the forest leave their imprint in clay. Whenever
-              possible, the work is created where it began, allowing each
-              piece to carry a tangible connection to the landscape that
-              inspired it.
-            </p>
+            <div className="mt-4 max-w-lg space-y-4 text-pretty text-lg leading-relaxed text-muted-foreground">
+              {heroParagraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/gallery"
