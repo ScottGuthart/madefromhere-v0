@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { MediaCarousel } from '@/components/media-carousel'
 import { slidesForArtwork } from '@/lib/media'
@@ -30,34 +29,35 @@ export function GalleryGrid({
     <>
       <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {artworks.map((art) => (
-          <button
-            key={art.id}
-            type="button"
-            onClick={() => setActive(art)}
-            className="group text-left"
-          >
-            <div className="relative aspect-4/5 overflow-hidden bg-muted">
-              <Image
-                src={art.image_url || '/placeholder.svg'}
+          <div key={art.id} className="group">
+            <div className="relative">
+              <MediaCarousel
+                items={slidesForArtwork(art, mediaByArtwork[art.id])}
                 alt={art.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                className="aspect-4/5"
               />
               {art.status === 'sold' && (
-                <span className="absolute left-3 top-3 bg-foreground px-2 py-1 text-[10px] uppercase tracking-widest text-background">
+                <span className="pointer-events-none absolute left-3 top-3 z-20 bg-foreground px-2 py-1 text-[10px] uppercase tracking-widest text-background">
                   Sold
                 </span>
               )}
             </div>
-            <div className="mt-3 flex items-baseline justify-between gap-3">
-              <h3 className="font-serif text-lg leading-tight">{art.title}</h3>
-              <span className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground">
-                {formatPieceDate(art.created_date, art.year)}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">{art.medium}</p>
-          </button>
+            <button
+              type="button"
+              onClick={() => setActive(art)}
+              className="mt-3 block w-full text-left"
+            >
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-serif text-lg leading-tight transition-colors group-hover:text-accent">
+                  {art.title}
+                </h3>
+                <span className="shrink-0 text-xs uppercase tracking-widest text-muted-foreground">
+                  {formatPieceDate(art.created_date, art.year)}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">{art.medium}</p>
+            </button>
+          </div>
         ))}
       </div>
 
