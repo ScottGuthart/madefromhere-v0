@@ -9,7 +9,7 @@ import type { Show } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Shows — From Here Studio',
+  title: 'Shows — Made From Here',
   description: 'Upcoming and past exhibitions of original, place-based art.',
 }
 

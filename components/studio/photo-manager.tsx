@@ -12,13 +12,19 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
 type PhotoSlot = {
-  key: 'hero_image'
+  key: 'hero_image' | 'logo_image'
   title: string
   help: string
   fallback: string
 }
 
 const SLOTS: PhotoSlot[] = [
+  {
+    key: 'logo_image',
+    title: 'Logo',
+    help: 'Shown at the top of the homepage and on the studio login page. A square image works best.',
+    fallback: '/brand/from-here-studio.png',
+  },
   {
     key: 'hero_image',
     title: 'Homepage portrait',

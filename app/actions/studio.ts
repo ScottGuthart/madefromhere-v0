@@ -442,7 +442,7 @@ export async function deleteShow(formData: FormData) {
 
 /* ---------- Homepage / about photos ---------- */
 
-const PHOTO_KEYS = ['hero_image', 'about_image'] as const
+const PHOTO_KEYS = ['hero_image', 'about_image', 'logo_image'] as const
 
 export async function updateLunaPhoto(formData: FormData) {
   await requireAuth()

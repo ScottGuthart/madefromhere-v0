@@ -24,11 +24,11 @@ export function SiteHeader() {
           href="/"
           className="flex flex-col leading-none"
           onClick={() => setOpen(false)}
-          aria-label="From Here Studio — home"
+          aria-label="Made From Here — home"
         >
-          <span className="font-serif text-2xl tracking-tight">from here</span>
+          <span className="font-serif text-2xl tracking-tight">made from here</span>
           <span className="mt-1 text-[0.65rem] uppercase tracking-[0.4em] text-muted-foreground">
-            studio
+            art rooted in place
           </span>
         </Link>
 
