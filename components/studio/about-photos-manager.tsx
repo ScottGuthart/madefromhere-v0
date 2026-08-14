@@ -13,6 +13,8 @@ import { Dropzone } from '@/components/ui/dropzone'
 import { FileInput } from '@/components/ui/file-input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { MediaCarousel } from '@/components/media-carousel'
 import type { AboutPhoto } from '@/lib/types'
 import { toast } from 'sonner'
 
@@ -26,6 +28,7 @@ function PhotoThumb({
   isLast: boolean
 }) {
   const [pending, startTransition] = useTransition()
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   function move(direction: 'up' | 'down') {
     const fd = new FormData()
@@ -56,13 +59,20 @@ function PhotoThumb({
 
   return (
     <div className="relative aspect-square w-full shrink-0 overflow-hidden border border-border bg-muted">
-      {photo.media_type === 'video' ? (
-        <video src={photo.url} className="h-full w-full object-cover" muted />
-      ) : (
-        <Image src={photo.url} alt="" fill className="object-cover" />
-      )}
+      <button
+        type="button"
+        onClick={() => setPreviewOpen(true)}
+        aria-label={`Preview this ${photo.media_type}`}
+        className="absolute inset-0 h-full w-full cursor-zoom-in"
+      >
+        {photo.media_type === 'video' ? (
+          <video src={photo.url} className="h-full w-full object-cover" muted />
+        ) : (
+          <Image src={photo.url} alt="" fill className="object-cover" />
+        )}
+      </button>
       {photo.media_type === 'video' && (
-        <span className="absolute left-1 top-1 flex items-center gap-1 bg-background/80 px-1.5 py-0.5 text-[10px] uppercase tracking-widest">
+        <span className="pointer-events-none absolute left-1 top-1 flex items-center gap-1 bg-background/80 px-1.5 py-0.5 text-[10px] uppercase tracking-widest">
           <Film className="size-3" /> Video
         </span>
       )}
@@ -100,6 +110,17 @@ function PhotoThumb({
           <Trash2 className="size-3 text-destructive" />
         </Button>
       </div>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent showCloseButton className="max-w-2xl overflow-hidden p-0 sm:rounded-none">
+          <MediaCarousel
+            items={[{ type: photo.media_type, url: photo.url }]}
+            alt=""
+            className="h-[70vh] sm:h-[75vh]"
+            fit="contain"
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
