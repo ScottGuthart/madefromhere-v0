@@ -314,6 +314,42 @@ function MediaThumb({ item, isFirst, isLast }: { item: ArtworkMedia; isFirst: bo
             className="h-[70vh] sm:h-[75vh]"
             fit="contain"
           />
+          {/* Same controls as the thumbnail's tiny buttons, sized for an
+           * easy tap on a phone instead of a 24px target on a small square. */}
+          <div className="flex items-center justify-between gap-2 p-3">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={pending || isFirst}
+                onClick={() => move('up')}
+              >
+                <ArrowUp className="size-4" /> Earlier
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={pending || isLast}
+                onClick={() => move('down')}
+              >
+                <ArrowDown className="size-4" /> Later
+              </Button>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={pending}
+              onClick={() => {
+                setPreviewOpen(false)
+                onDelete()
+              }}
+            >
+              <Trash2 className="size-4" /> Remove
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -515,7 +551,7 @@ function ArtworkRow({
             </div>
           </form>
         ) : (
-          <div className="flex flex-1 items-start justify-between gap-4">
+          <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="font-serif text-lg leading-tight">{art.title}</h4>
@@ -541,7 +577,7 @@ function ArtworkRow({
                 </p>
               )}
             </div>
-            <div className="flex shrink-0 gap-1">
+            <div className="flex shrink-0 flex-wrap gap-1">
               <Button
                 type="button"
                 size="icon"

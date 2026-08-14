@@ -82,13 +82,15 @@ export default async function StudioPage() {
         </div>
 
         <Tabs defaultValue="artwork">
-          <TabsList>
-            <TabsTrigger value="places">Places</TabsTrigger>
-            <TabsTrigger value="artwork">Gallery</TabsTrigger>
-            <TabsTrigger value="shows">Shows</TabsTrigger>
-            <TabsTrigger value="photos">Photos</TabsTrigger>
-            <TabsTrigger value="content">Site content</TabsTrigger>
-          </TabsList>
+          <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <TabsList className="w-max">
+              <TabsTrigger value="places">Places</TabsTrigger>
+              <TabsTrigger value="artwork">Gallery</TabsTrigger>
+              <TabsTrigger value="shows">Shows</TabsTrigger>
+              <TabsTrigger value="photos">Photos</TabsTrigger>
+              <TabsTrigger value="content">Site content</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="places" className="mt-6">
             <CollectionManager collections={collections} />
