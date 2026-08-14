@@ -74,8 +74,8 @@ export default async function GalleryPage() {
           </h1>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
             Every piece begins with a place. Use the arrows to browse the
-            materials gathered, the process, and the final piece made there —
-            or tap through for the full story.
+            materials gathered, the process, and the final piece they became
+            — or tap through for the full story.
           </p>
         </header>
 
