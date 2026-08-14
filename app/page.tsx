@@ -37,13 +37,12 @@ export default async function HomePage() {
         <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 md:grid-cols-2 md:gap-12 md:px-8 md:py-20">
           <div>
             <h1 className="sr-only">
-              From Here Studio &mdash;{' '}
-              {content.hero_tagline ?? 'Made From Here'}. Original art rooted in
-              place.
+              Made From Here &mdash;{' '}
+              {content.hero_tagline ?? 'Art rooted in place'}.
             </h1>
             <Image
-              src="/brand/from-here-studio.png"
-              alt="From Here Studio — art rooted in place. A cat gazing at a crescent moon over a mountain lake."
+              src={content.logo_image ?? '/brand/from-here-studio.png'}
+              alt="Made From Here — art rooted in place. A cat gazing at a crescent moon over a mountain lake."
               width={620}
               height={620}
               priority

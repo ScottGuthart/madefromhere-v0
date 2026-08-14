@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { MediaCarousel } from '@/components/media-carousel'
+import { ObfuscatedEmail } from '@/components/obfuscated-email'
 import { slidesForArtwork } from '@/lib/media'
 import { formatPieceDate } from '@/lib/format'
 import type { Artwork, ArtworkMedia } from '@/lib/types'
@@ -11,9 +12,15 @@ import { cn } from '@/lib/utils'
 export function GalleryGrid({
   artworks,
   mediaByArtwork = {},
+  contactUser,
+  contactDomain,
 }: {
   artworks: Artwork[]
   mediaByArtwork?: Record<number, ArtworkMedia[]>
+  // Passed pre-split rather than as one "contact@domain" prop — see
+  // lib/email.ts for why that matters for keeping it out of scrapers' reach.
+  contactUser?: string
+  contactDomain?: string
 }) {
   const [active, setActive] = useState<Artwork | null>(null)
 
@@ -101,13 +108,13 @@ export function GalleryGrid({
                 <p className="text-sm leading-relaxed text-foreground/80">
                   {active.description}
                 </p>
-                {active.status === 'available' && (
-                  <a
-                    href="mailto:hello@fromherestudio.art"
+                {active.status === 'available' && contactUser && contactDomain && (
+                  <ObfuscatedEmail
+                    user={contactUser}
+                    domain={contactDomain}
+                    label="Inquire about this piece"
                     className="inline-flex w-fit items-center border border-foreground px-4 py-2 text-sm tracking-wide transition-colors hover:bg-foreground hover:text-background"
-                  >
-                    Inquire about this piece
-                  </a>
+                  />
                 )}
               </div>
             </div>

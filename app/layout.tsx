@@ -19,9 +19,9 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: 'From Here Studio — Art Rooted in Place',
+  title: 'Made From Here — Art Rooted in Place',
   description:
-    'From Here Studio is home to original art rooted in place. Browse the gallery and upcoming shows.',
+    'Made From Here is home to original art rooted in place. Browse the gallery and upcoming shows.',
   generator: 'v0.app',
 }
 

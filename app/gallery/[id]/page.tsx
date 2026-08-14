@@ -6,6 +6,7 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { GalleryGrid } from '@/components/gallery-grid'
 import { mapEmbedUrl, mapEmbedUrlForQuery, mapLinkUrl } from '@/lib/geo'
+import { splitEmail } from '@/lib/email'
 import {
   getArtworks,
   getArtworkMediaByArtwork,
@@ -23,7 +24,7 @@ export async function generateMetadata({
   const { id } = await params
   const collection = await getCollection(Number(id))
   return {
-    title: collection ? `${collection.title} — From Here Studio` : 'Gallery — From Here Studio',
+    title: collection ? `${collection.title} — Made From Here` : 'Gallery — Made From Here',
   }
 }
 
@@ -47,6 +48,7 @@ export default async function CollectionPage({
 
   const pieces = artworks.filter((a) => a.collection_id === collectionId)
   const mediaByArtwork = Object.fromEntries(mediaMap)
+  const contact = splitEmail(content.contact_email)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -130,7 +132,12 @@ export default async function CollectionPage({
           <h2 className="mb-8 border-b border-border pb-4 font-serif text-2xl font-semibold">
             {pieces.length} piece{pieces.length === 1 ? '' : 's'} from here
           </h2>
-          <GalleryGrid artworks={pieces} mediaByArtwork={mediaByArtwork} />
+          <GalleryGrid
+            artworks={pieces}
+            mediaByArtwork={mediaByArtwork}
+            contactUser={contact?.user}
+            contactDomain={contact?.domain}
+          />
         </div>
       </main>
       <SiteFooter email={content.contact_email} />

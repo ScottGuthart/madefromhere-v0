@@ -4,6 +4,7 @@ import { GalleryGrid } from '@/components/gallery-grid'
 import { CollectionsGrid } from '@/components/collections-grid'
 import type { MediaItem } from '@/components/media-carousel'
 import { slidesForArtwork } from '@/lib/media'
+import { splitEmail } from '@/lib/email'
 import {
   getArtworks,
   getArtworkMediaByArtwork,
@@ -15,7 +16,7 @@ import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Gallery — From Here Studio',
+  title: 'Gallery — Made From Here',
   description: 'Browse original art, organized by the places that inspired it.',
 }
 
@@ -47,6 +48,7 @@ export default async function GalleryPage() {
 
   const unassigned = artworks.filter((a) => a.collection_id == null)
   const mediaByArtwork = Object.fromEntries(mediaMap)
+  const contact = splitEmail(content.contact_email)
 
   const slidesByCollection = Object.fromEntries(
     collections.map((c) => [
@@ -92,7 +94,12 @@ export default async function GalleryPage() {
                     More work
                   </h2>
                 )}
-                <GalleryGrid artworks={unassigned} mediaByArtwork={mediaByArtwork} />
+                <GalleryGrid
+                  artworks={unassigned}
+                  mediaByArtwork={mediaByArtwork}
+                  contactUser={contact?.user}
+                  contactDomain={contact?.domain}
+                />
               </div>
             )}
           </>

@@ -6,8 +6,8 @@ import { getAboutPhotos, getSiteContent } from '@/lib/queries'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'About — From Here Studio',
-  description: 'Meet Jackie, the artist behind From Here Studio.',
+  title: 'About — Made From Here',
+  description: 'Meet Jackie, the artist behind Made From Here.',
 }
 
 export default async function AboutPage() {
