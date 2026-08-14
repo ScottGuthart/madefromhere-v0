@@ -10,7 +10,8 @@ export function SiteFooter({ email }: { email?: string }) {
             Art rooted in place
           </p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Original art rooted in place &mdash; made where it began.
+            Original art rooted in place &mdash; made with pieces of where it
+            began.
           </p>
         </div>
         <div className="flex flex-col gap-1 text-sm text-muted-foreground md:items-end">
