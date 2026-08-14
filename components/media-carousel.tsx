@@ -37,9 +37,11 @@ export function MediaCarousel({
     <div className={cn('relative overflow-hidden bg-muted', className)}>
       {/* Every slide is mounted from the start (not just the active one) so
        * videos begin fetching as soon as the carousel is on the page,
-       * instead of only once someone swipes to them. The active slide gets
-       * `preload="auto"` to fully buffer; the rest get the much lighter
-       * "metadata" so they're not downloading in full for no reason. */}
+       * instead of only once someone swipes to them. All videos preload in
+       * full (`preload="auto"`), not just the active slide — a lighter
+       * "metadata" preload often doesn't paint a visible first frame at all
+       * in some browsers, which is why an inactive video slide could look
+       * like a blank box instead of a thumbnail until it was played. */}
       {safeItems.map((item, i) => (
         <div
           key={item.url + i}
@@ -55,7 +57,7 @@ export function MediaCarousel({
               controls={i === index}
               playsInline
               muted
-              preload={i === index ? 'auto' : 'metadata'}
+              preload="auto"
               className={cn('h-full w-full', fit === 'contain' ? 'object-contain' : 'object-cover')}
             />
           ) : (
