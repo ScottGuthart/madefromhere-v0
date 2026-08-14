@@ -119,6 +119,42 @@ function PhotoThumb({
             className="h-[70vh] sm:h-[75vh]"
             fit="contain"
           />
+          {/* Same controls as the thumbnail's tiny buttons, sized for an
+           * easy tap on a phone instead of a 24px target on a small square. */}
+          <div className="flex items-center justify-between gap-2 p-3">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={pending || isFirst}
+                onClick={() => move('up')}
+              >
+                <ArrowUp className="size-4" /> Earlier
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={pending || isLast}
+                onClick={() => move('down')}
+              >
+                <ArrowDown className="size-4" /> Later
+              </Button>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              disabled={pending}
+              onClick={() => {
+                setPreviewOpen(false)
+                onDelete()
+              }}
+            >
+              <Trash2 className="size-4" /> Remove
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
