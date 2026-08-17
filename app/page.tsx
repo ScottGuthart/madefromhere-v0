@@ -49,7 +49,12 @@ export default async function HomePage() {
                 priority
                 className="w-full"
               />
-              <div className="mt-4 text-center">
+              {/* The logo artwork isn't centered in its own square canvas —
+               * there's more empty space to the right of the drawing than
+               * the left — so centering on the full image would put the
+               * text left of where the artwork actually sits. Nudged right
+               * to compensate; adjust translate-x if the logo changes. */}
+              <div className="mt-4 translate-x-[3%] text-center">
                 <p className="font-serif text-3xl tracking-tight md:text-4xl">
                   made from here
                 </p>
