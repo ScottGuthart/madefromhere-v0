@@ -42,13 +42,21 @@ export default async function HomePage() {
             </h1>
             <Image
               src={content.logo_image ?? '/brand/from-here-studio.png'}
-              alt="Made From Here — art rooted in place. A cat gazing at a crescent moon over a mountain lake."
+              alt="A black cat gazing at a crescent moon over a mountain lake, framed by wildflowers."
               width={620}
               height={620}
               priority
               className="mx-auto w-full max-w-[440px] md:mx-0"
             />
-            <div className="mt-4 max-w-lg space-y-4 text-pretty text-lg leading-relaxed text-muted-foreground">
+            <div className="mt-4 text-center md:text-left">
+              <p className="font-serif text-3xl tracking-tight md:text-4xl">
+                made from here
+              </p>
+              <p className="mt-1 text-xs uppercase tracking-[0.4em] text-muted-foreground">
+                art rooted in place
+              </p>
+            </div>
+            <div className="mt-6 max-w-lg space-y-4 text-pretty text-lg leading-relaxed text-muted-foreground">
               {heroParagraphs.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
