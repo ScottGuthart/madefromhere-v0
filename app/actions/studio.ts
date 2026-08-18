@@ -1,6 +1,6 @@
 'use server'
 
-import { del } from '@vercel/blob'
+import { del, put } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
 import { sql } from '@/lib/db'
 import { ensureSchema } from '@/lib/schema'
@@ -30,6 +30,109 @@ async function deleteBlobIfOwned(url: string | null | undefined) {
       // ignore blob deletion failures
     }
   }
+}
+
+/* ---------- One-time repair for videos with a wrong content type ----------
+ *
+ * Videos uploaded before lib/blob-client.ts started passing an explicit
+ * `contentType` were stored with whatever Blob storage guessed from the
+ * filename — which falls back to a generic binary type whenever the
+ * filename has no extension it recognizes. A browser can't play a <video>
+ * served that way at all (not slowly — not ever), no matter how the page
+ * preloads it. The video data itself was always fine; this just re-uploads
+ * those same bytes under the correct content type and repoints the
+ * database row at the fixed copy. */
+
+const VIDEO_CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
+  mov: 'video/quicktime',
+  qt: 'video/quicktime',
+  mp4: 'video/mp4',
+  m4v: 'video/mp4',
+  webm: 'video/webm',
+  avi: 'video/x-msvideo',
+  mkv: 'video/x-matroska',
+  '3gp': 'video/3gpp',
+  '3g2': 'video/3gpp2',
+}
+
+function guessVideoContentType(url: string): string {
+  const ext = new URL(url).pathname.split('.').pop()?.toLowerCase() ?? ''
+  return VIDEO_CONTENT_TYPE_BY_EXTENSION[ext] ?? 'video/mp4'
+}
+
+// Returns the fixed URL, or null if this one was already fine and nothing
+// needed to change (so re-running this repair costs almost nothing).
+async function fixVideoContentType(url: string): Promise<string | null> {
+  const head = await fetch(url, { method: 'HEAD' }).catch(() => null)
+  if (head?.headers.get('content-type')?.startsWith('video/')) {
+    return null
+  }
+
+  const res = await fetch(url)
+  if (!res.ok || !res.body) {
+    throw new Error(`Couldn't fetch ${url}: ${res.status}`)
+  }
+
+  const pathname = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''))
+  const blob = await put(pathname, res.body, {
+    access: 'public',
+    contentType: guessVideoContentType(url),
+    addRandomSuffix: true,
+    multipart: true,
+  })
+  await del(url).catch(() => {})
+  return blob.url
+}
+
+export async function fixExistingVideoContentTypes(): Promise<{
+  fixed: number
+  alreadyOk: number
+  failed: number
+}> {
+  await requireAuth()
+  await ensureSchema()
+
+  const artworkVideos = (await sql`
+    SELECT id, url FROM artwork_media WHERE media_type = 'video'
+  `) as { id: number; url: string }[]
+  const aboutVideos = (await sql`
+    SELECT id, url FROM about_photos WHERE media_type = 'video'
+  `) as { id: number; url: string }[]
+
+  let fixed = 0
+  let alreadyOk = 0
+  let failed = 0
+
+  for (const row of artworkVideos) {
+    try {
+      const newUrl = await fixVideoContentType(row.url)
+      if (!newUrl) {
+        alreadyOk++
+        continue
+      }
+      await sql`UPDATE artwork_media SET url = ${newUrl} WHERE id = ${row.id}`
+      fixed++
+    } catch {
+      failed++
+    }
+  }
+
+  for (const row of aboutVideos) {
+    try {
+      const newUrl = await fixVideoContentType(row.url)
+      if (!newUrl) {
+        alreadyOk++
+        continue
+      }
+      await sql`UPDATE about_photos SET url = ${newUrl} WHERE id = ${row.id}`
+      fixed++
+    } catch {
+      failed++
+    }
+  }
+
+  revalidateAll()
+  return { fixed, alreadyOk, failed }
 }
 
 function parseCoord(value: FormDataEntryValue | null): number | null {
