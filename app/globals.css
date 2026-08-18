@@ -76,6 +76,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Fraunces is a variable font with an "optical size" axis that browsers
+   * auto-scale based on rendered text size — at the large sizes used for
+   * the wordmark and headings, that pushes it into Fraunces' full display
+   * cut, which has deliberately dramatic, unusual letterforms (most
+   * noticeable on the lowercase f). Turning off that auto-scaling keeps
+   * every size at the font's calmer default cut instead. */
+  .font-serif {
+    font-optical-sizing: none;
+  }
 }
 
 @utility paint-underline {
