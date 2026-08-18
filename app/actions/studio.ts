@@ -60,15 +60,28 @@ function guessVideoContentType(url: string): string {
   return VIDEO_CONTENT_TYPE_BY_EXTENSION[ext] ?? 'video/mp4'
 }
 
+// A bare server-to-server request (no browser-like headers at all) got
+// rejected outright (403) when this repair tried to fetch videos back from
+// Blob storage, even though the exact same URLs load fine in an actual
+// browser tab. Giving the request a normal browser identity is a cheap,
+// well-precedented fix for that class of block (see the Google Fonts
+// User-Agent trick in app/opengraph-image.tsx for the same pattern).
+const BROWSER_LIKE_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+}
+
 // Returns the fixed URL, or null if this one was already fine and nothing
 // needed to change (so re-running this repair costs almost nothing).
 async function fixVideoContentType(url: string): Promise<string | null> {
-  const head = await fetch(url, { method: 'HEAD' }).catch(() => null)
+  const head = await fetch(url, { method: 'HEAD', headers: BROWSER_LIKE_HEADERS }).catch(
+    () => null,
+  )
   if (head?.headers.get('content-type')?.startsWith('video/')) {
     return null
   }
 
-  const res = await fetch(url)
+  const res = await fetch(url, { headers: BROWSER_LIKE_HEADERS })
   if (!res.ok) {
     throw new Error(`Fetching the original video failed (${res.status})`)
   }
