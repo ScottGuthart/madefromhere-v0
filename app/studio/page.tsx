@@ -20,8 +20,14 @@ import { ShowManager } from '@/components/studio/show-manager'
 import { PhotoManager } from '@/components/studio/photo-manager'
 import { AboutPhotosManager } from '@/components/studio/about-photos-manager'
 import { ContentEditor } from '@/components/studio/content-editor'
+import { VideoRepair } from '@/components/studio/video-repair'
 
 export const dynamic = 'force-dynamic'
+// The video repair action downloads and re-uploads each affected video
+// server-side, one at a time — gives that enough room to finish for a
+// realistic number of videos instead of hitting the default function
+// timeout partway through.
+export const maxDuration = 60
 
 export const metadata = {
   title: 'Studio — Made From Here',
@@ -80,6 +86,8 @@ export default async function StudioPage() {
             Manage the gallery, shows, and site content.
           </p>
         </div>
+
+        <VideoRepair />
 
         <Tabs defaultValue="artwork">
           <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
