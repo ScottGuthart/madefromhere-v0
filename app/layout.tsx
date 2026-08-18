@@ -19,10 +19,17 @@ const fraunces = Fraunces({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://madefromhere.com'),
   title: 'Made From Here — Art Rooted in Place',
   description:
     'Made From Here is home to original art rooted in place. Browse the gallery and upcoming shows.',
   generator: 'v0.app',
+  openGraph: {
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 export const viewport: Viewport = {
