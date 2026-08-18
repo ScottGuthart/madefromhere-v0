@@ -69,16 +69,21 @@ async function fixVideoContentType(url: string): Promise<string | null> {
   }
 
   const res = await fetch(url)
-  if (!res.ok || !res.body) {
-    throw new Error(`Couldn't fetch ${url}: ${res.status}`)
+  if (!res.ok) {
+    throw new Error(`Fetching the original video failed (${res.status})`)
   }
+  // Buffered rather than streamed into `put()` — a raw fetch ReadableStream
+  // combined with multipart upload isn't well-supported and was the actual
+  // cause of every video failing to repair on the first attempt at this.
+  // These are individual video clips, not huge archives, so holding one at
+  // a time in memory is fine.
+  const bytes = Buffer.from(await res.arrayBuffer())
 
   const pathname = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''))
-  const blob = await put(pathname, res.body, {
+  const blob = await put(pathname, bytes, {
     access: 'public',
     contentType: guessVideoContentType(url),
     addRandomSuffix: true,
-    multipart: true,
   })
   await del(url).catch(() => {})
   return blob.url
@@ -88,6 +93,9 @@ export async function fixExistingVideoContentTypes(): Promise<{
   fixed: number
   alreadyOk: number
   failed: number
+  // A couple of actual error messages, so a failure is diagnosable instead
+  // of just a bare count if this needs troubleshooting again.
+  errors: string[]
 }> {
   await requireAuth()
   await ensureSchema()
@@ -102,37 +110,41 @@ export async function fixExistingVideoContentTypes(): Promise<{
   let fixed = 0
   let alreadyOk = 0
   let failed = 0
+  const errors: string[] = []
 
-  for (const row of artworkVideos) {
+  async function processRow(
+    row: { id: number; url: string },
+    table: 'artwork_media' | 'about_photos',
+  ) {
     try {
       const newUrl = await fixVideoContentType(row.url)
       if (!newUrl) {
         alreadyOk++
-        continue
+        return
       }
-      await sql`UPDATE artwork_media SET url = ${newUrl} WHERE id = ${row.id}`
+      if (table === 'artwork_media') {
+        await sql`UPDATE artwork_media SET url = ${newUrl} WHERE id = ${row.id}`
+      } else {
+        await sql`UPDATE about_photos SET url = ${newUrl} WHERE id = ${row.id}`
+      }
       fixed++
-    } catch {
+    } catch (e) {
       failed++
+      if (errors.length < 3) {
+        errors.push(e instanceof Error ? e.message : String(e))
+      }
     }
   }
 
+  for (const row of artworkVideos) {
+    await processRow(row, 'artwork_media')
+  }
   for (const row of aboutVideos) {
-    try {
-      const newUrl = await fixVideoContentType(row.url)
-      if (!newUrl) {
-        alreadyOk++
-        continue
-      }
-      await sql`UPDATE about_photos SET url = ${newUrl} WHERE id = ${row.id}`
-      fixed++
-    } catch {
-      failed++
-    }
+    await processRow(row, 'about_photos')
   }
 
   revalidateAll()
-  return { fixed, alreadyOk, failed }
+  return { fixed, alreadyOk, failed, errors }
 }
 
 function parseCoord(value: FormDataEntryValue | null): number | null {

@@ -16,6 +16,7 @@ export function VideoRepair() {
     fixed: number
     alreadyOk: number
     failed: number
+    errors: string[]
   } | null>(null)
 
   function onClick() {
@@ -44,10 +45,15 @@ export function VideoRepair() {
           Repairs videos that show a black box instead of playing. Safe to run more than once.
         </p>
         {result && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            Last run: fixed {result.fixed}, already OK {result.alreadyOk}
-            {result.failed > 0 ? `, couldn't fix ${result.failed}` : ''}.
-          </p>
+          <>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Last run: fixed {result.fixed}, already OK {result.alreadyOk}
+              {result.failed > 0 ? `, couldn't fix ${result.failed}` : ''}.
+            </p>
+            {result.errors.length > 0 && (
+              <p className="mt-1 text-xs text-destructive">{result.errors.join(' · ')}</p>
+            )}
+          </>
         )}
       </div>
       <Button type="button" variant="outline" size="sm" onClick={onClick} disabled={pending}>
