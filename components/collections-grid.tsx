@@ -5,9 +5,11 @@ import type { Collection } from '@/lib/types'
 export function CollectionsGrid({
   collections,
   slidesByCollection,
+  pieceCountByCollection = {},
 }: {
   collections: Collection[]
   slidesByCollection: Record<number, MediaItem[]>
+  pieceCountByCollection?: Record<number, number>
 }) {
   if (collections.length === 0) return null
 
@@ -15,6 +17,7 @@ export function CollectionsGrid({
     <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {collections.map((c) => {
         const slides = slidesByCollection[c.id]
+        const pieceCount = pieceCountByCollection[c.id] ?? 0
         return (
           <div key={c.id} className="group">
             <MediaCarousel
@@ -37,7 +40,9 @@ export function CollectionsGrid({
                 </p>
               )}
               <span className="mt-1 inline-block text-xs uppercase tracking-widest text-muted-foreground transition-colors group-hover:text-accent">
-                View this place &rarr;
+                {pieceCount > 0
+                  ? `View ${pieceCount} piece${pieceCount === 1 ? '' : 's'} from this place →`
+                  : 'View this place →'}
               </span>
             </Link>
           </div>
