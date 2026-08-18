@@ -1,6 +1,6 @@
 'use server'
 
-import { del, put } from '@vercel/blob'
+import { del, get, put } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
 import { sql } from '@/lib/db'
 import { ensureSchema } from '@/lib/schema'
@@ -60,37 +60,30 @@ function guessVideoContentType(url: string): string {
   return VIDEO_CONTENT_TYPE_BY_EXTENSION[ext] ?? 'video/mp4'
 }
 
-// A bare server-to-server request (no browser-like headers at all) got
-// rejected outright (403) when this repair tried to fetch videos back from
-// Blob storage, even though the exact same URLs load fine in an actual
-// browser tab. Giving the request a normal browser identity is a cheap,
-// well-precedented fix for that class of block (see the Google Fonts
-// User-Agent trick in app/opengraph-image.tsx for the same pattern).
-const BROWSER_LIKE_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-}
-
+// A plain `fetch()` of these videos' own public URLs — even with a normal
+// browser User-Agent attached — got rejected outright (403) every time,
+// despite the exact same URLs loading fine from an actual browser tab. The
+// SDK's own `get()` reads a blob through an authenticated call (using our
+// upload token) instead of an anonymous HTTP request, which is the
+// documented way to read blob content back on the server — use that
+// instead of hand-rolling a fetch.
+//
 // Returns the fixed URL, or null if this one was already fine and nothing
 // needed to change (so re-running this repair costs almost nothing).
 async function fixVideoContentType(url: string): Promise<string | null> {
-  const head = await fetch(url, { method: 'HEAD', headers: BROWSER_LIKE_HEADERS }).catch(
-    () => null,
-  )
-  if (head?.headers.get('content-type')?.startsWith('video/')) {
+  const result = await get(url, { access: 'public' })
+  if (!result || result.statusCode !== 200) {
+    throw new Error("Couldn't read the original video from storage")
+  }
+  if (result.blob.contentType.startsWith('video/')) {
     return null
   }
 
-  const res = await fetch(url, { headers: BROWSER_LIKE_HEADERS })
-  if (!res.ok) {
-    throw new Error(`Fetching the original video failed (${res.status})`)
-  }
-  // Buffered rather than streamed into `put()` — a raw fetch ReadableStream
-  // combined with multipart upload isn't well-supported and was the actual
-  // cause of every video failing to repair on the first attempt at this.
-  // These are individual video clips, not huge archives, so holding one at
-  // a time in memory is fine.
-  const bytes = Buffer.from(await res.arrayBuffer())
+  // Buffered rather than streamed into `put()` with multipart, which isn't
+  // well-supported together and was the cause of every video failing to
+  // repair on an earlier attempt at this. These are individual video
+  // clips, not huge archives, so holding one at a time in memory is fine.
+  const bytes = Buffer.from(await new Response(result.stream).arrayBuffer())
 
   const pathname = decodeURIComponent(new URL(url).pathname.replace(/^\//, ''))
   const blob = await put(pathname, bytes, {
