@@ -60,6 +60,9 @@ export default async function GalleryPage() {
       ),
     ]),
   )
+  const pieceCountByCollection = Object.fromEntries(
+    collections.map((c) => [c.id, artworks.filter((a) => a.collection_id === c.id).length]),
+  )
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -85,7 +88,11 @@ export default async function GalleryPage() {
           </p>
         ) : (
           <>
-            <CollectionsGrid collections={collections} slidesByCollection={slidesByCollection} />
+            <CollectionsGrid
+              collections={collections}
+              slidesByCollection={slidesByCollection}
+              pieceCountByCollection={pieceCountByCollection}
+            />
 
             {unassigned.length > 0 && (
               <div className={collections.length > 0 ? 'mt-16' : undefined}>

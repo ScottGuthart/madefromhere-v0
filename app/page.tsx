@@ -34,13 +34,13 @@ export default async function HomePage() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 md:grid-cols-2 md:gap-12 md:px-8 md:py-20">
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-10 md:grid-cols-2 md:gap-12 md:px-8 md:py-20">
           <div>
             <h1 className="sr-only">
               Made From Here &mdash;{' '}
               {content.hero_tagline ?? 'Art rooted in place'}.
             </h1>
-            <div className="mx-auto w-full max-w-[440px] md:mx-0">
+            <div className="mx-auto w-full max-w-[220px] sm:max-w-[300px] md:mx-0 md:max-w-[440px]">
               <Image
                 src={content.logo_image ?? '/brand/from-here-studio.png'}
                 alt="A black cat gazing at a crescent moon over a mountain lake, framed by wildflowers."
@@ -54,16 +54,16 @@ export default async function HomePage() {
                * the left — so centering on the full image would put the
                * text left of where the artwork actually sits. Nudged right
                * to compensate; adjust translate-x if the logo changes. */}
-              <div className="mt-4 translate-x-[3%] text-center">
-                <p className="font-serif text-3xl tracking-tight md:text-4xl">
+              <div className="mt-3 translate-x-[3%] text-center sm:mt-4">
+                <p className="font-serif text-xl tracking-tight sm:text-2xl md:text-4xl">
                   made from here
                 </p>
-                <p className="mt-1 text-xs uppercase tracking-[0.4em] text-muted-foreground">
+                <p className="mt-1 text-[10px] uppercase tracking-[0.3em] text-muted-foreground sm:text-xs md:tracking-[0.4em]">
                   art rooted in place
                 </p>
               </div>
             </div>
-            <div className="mt-6 max-w-lg space-y-4 text-pretty text-lg leading-relaxed text-muted-foreground">
+            <div className="mt-4 max-w-lg space-y-4 text-pretty text-lg leading-relaxed text-muted-foreground sm:mt-6">
               {heroParagraphs.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
