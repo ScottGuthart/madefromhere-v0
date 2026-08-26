@@ -58,6 +58,18 @@ async function runMigrations() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `
+  // A captured still frame for video slides, shown as the <video>'s poster
+  // so a real thumbnail appears instantly without downloading any video
+  // data — null until a video is uploaded (or backfilled) after this
+  // shipped.
+  await sql`
+    ALTER TABLE artwork_media
+      ADD COLUMN IF NOT EXISTS thumbnail_url TEXT
+  `
+  await sql`
+    ALTER TABLE about_photos
+      ADD COLUMN IF NOT EXISTS thumbnail_url TEXT
+  `
 }
 
 export function ensureSchema(): Promise<void> {

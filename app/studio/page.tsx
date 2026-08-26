@@ -21,6 +21,7 @@ import { PhotoManager } from '@/components/studio/photo-manager'
 import { AboutPhotosManager } from '@/components/studio/about-photos-manager'
 import { ContentEditor } from '@/components/studio/content-editor'
 import { VideoRepair } from '@/components/studio/video-repair'
+import { VideoThumbnailBackfill } from '@/components/studio/video-thumbnail-backfill'
 
 export const dynamic = 'force-dynamic'
 // The video repair action downloads and re-uploads each affected video
@@ -88,6 +89,7 @@ export default async function StudioPage() {
         </div>
 
         <VideoRepair />
+        <VideoThumbnailBackfill />
 
         <Tabs defaultValue="artwork">
           <div className="-mx-5 overflow-x-auto px-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">

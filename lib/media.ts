@@ -5,6 +5,10 @@ import type { Artwork, ArtworkMedia } from '@/lib/types'
 // shots, timelapses) in order — the sequence shown in its carousel anywhere
 // it appears on the site.
 export function slidesForArtwork(art: Artwork, media: ArtworkMedia[] | undefined): MediaItem[] {
-  const extra: MediaItem[] = (media ?? []).map((m) => ({ type: m.media_type, url: m.url }))
+  const extra: MediaItem[] = (media ?? []).map((m) => ({
+    type: m.media_type,
+    url: m.url,
+    thumbnailUrl: m.thumbnail_url ?? undefined,
+  }))
   return [{ type: 'image', url: art.image_url }, ...extra]
 }

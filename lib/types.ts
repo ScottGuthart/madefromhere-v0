@@ -29,6 +29,9 @@ export type ArtworkMedia = {
   artwork_id: number
   media_type: 'image' | 'video'
   url: string
+  // A captured still frame for video slides — null for images, and for
+  // videos uploaded before thumbnail capture existed.
+  thumbnail_url: string | null
   caption: string
   sort_order: number
   created_at: string
@@ -38,6 +41,7 @@ export type AboutPhoto = {
   id: number
   media_type: 'image' | 'video'
   url: string
+  thumbnail_url: string | null
   sort_order: number
   created_at: string
 }

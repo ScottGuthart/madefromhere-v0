@@ -21,7 +21,7 @@ import {
   deleteArtworkMedia,
   reorderArtworkMedia,
 } from '@/app/actions/studio'
-import { uploadFile, mediaTypeFor } from '@/lib/blob-client'
+import { uploadFile, uploadMediaItem } from '@/lib/blob-client'
 import { formatPieceDate, toDateInput } from '@/lib/format'
 import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -309,7 +309,9 @@ function MediaThumb({ item, isFirst, isLast }: { item: ArtworkMedia; isFirst: bo
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent showCloseButton className="max-w-2xl overflow-hidden p-0 sm:rounded-none">
           <MediaCarousel
-            items={[{ type: item.media_type, url: item.url }]}
+            items={[
+              { type: item.media_type, url: item.url, thumbnailUrl: item.thumbnail_url ?? undefined },
+            ]}
             alt=""
             className="h-[70vh] sm:h-[75vh]"
             fit="contain"
@@ -368,10 +370,7 @@ function ArtworkMediaManager({ artworkId, media }: { artworkId: number; media: A
     setUploading(true)
     try {
       const items = await Promise.all(
-        chosen.map(async (file) => ({
-          url: await uploadFile(file, 'artwork-media'),
-          media_type: mediaTypeFor(file),
-        })),
+        chosen.map((file) => uploadMediaItem(file, 'artwork-media')),
       )
       const fd = new FormData()
       fd.set('artwork_id', String(artworkId))
