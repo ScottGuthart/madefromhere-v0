@@ -8,6 +8,10 @@ import { cn } from '@/lib/utils'
 export type MediaItem = {
   type: 'image' | 'video'
   url: string
+  // A captured still frame, shown as the video's poster so a real
+  // thumbnail appears instantly with zero video data downloaded. Videos
+  // uploaded before thumbnail capture existed won't have one yet.
+  thumbnailUrl?: string
 }
 
 export function MediaCarousel({
@@ -77,12 +81,14 @@ export function MediaCarousel({
     <div ref={containerRef} className={cn('relative overflow-hidden bg-muted', className)}>
       {/* Every slide is mounted from the start (not just the active one),
        * and every video always has a `src` — so every slide always has a
-       * real first frame and a working play button, never the broken
-       * black-box-disabled-button state. The active slide gets a full
-       * buffer (`preload="auto"`) once this carousel is primed, since
-       * that's the one actually about to be watched; every other slide
-       * only ever needs `preload="metadata"` (enough for a thumbnail, far
-       * lighter than downloading a video no one's looking at yet). */}
+       * working play button, never the broken black-box-disabled-button
+       * state. A captured `poster` frame shows a real thumbnail instantly
+       * with zero video data downloaded; without one (videos uploaded
+       * before thumbnail capture existed), `preload="metadata"` is the
+       * fallback so there's at least *something* to look at. The active
+       * slide gets a full buffer (`preload="auto"`) once this carousel is
+       * primed, since that's the one actually about to be watched —
+       * inactive slides never need more than their poster. */}
       {safeItems.map((item, i) => (
         <div
           key={item.url + i}
@@ -95,10 +101,13 @@ export function MediaCarousel({
           {item.type === 'video' ? (
             <video
               src={item.url}
+              poster={item.thumbnailUrl}
               controls={i === index}
               playsInline
               muted
-              preload={primed && i === index ? 'auto' : 'metadata'}
+              preload={
+                primed && i === index ? 'auto' : item.thumbnailUrl ? 'none' : 'metadata'
+              }
               className={cn('h-full w-full', fit === 'contain' ? 'object-contain' : 'object-cover')}
             />
           ) : (

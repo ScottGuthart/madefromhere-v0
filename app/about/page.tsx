@@ -20,7 +20,11 @@ export default async function AboutPage() {
   // until any photos are added through the new carousel manager.
   const slides: MediaItem[] =
     aboutPhotos.length > 0
-      ? aboutPhotos.map((p) => ({ type: p.media_type, url: p.url }))
+      ? aboutPhotos.map((p) => ({
+          type: p.media_type,
+          url: p.url,
+          thumbnailUrl: p.thumbnail_url ?? undefined,
+        }))
       : [{ type: 'image', url: content.about_image ?? '/luna/about.png' }]
 
   return (

@@ -153,6 +153,58 @@ export async function fixExistingVideoContentTypes(): Promise<{
   return { fixed, alreadyOk, failed, errors }
 }
 
+/* ---------- Backfilling thumbnails for videos uploaded before capture existed ----------
+ *
+ * Capturing a still frame from a video only works in a real browser (it
+ * needs an actual <video> + <canvas> to decode a frame) — there's no
+ * server-side equivalent here, so this pairs a server action that finds
+ * what's missing with the browser doing the actual capture and upload,
+ * then reporting the result back. See components/studio/video-thumbnail-backfill.tsx. */
+
+export type ThumbnailBackfillRow = {
+  table: 'artwork_media' | 'about_photos'
+  id: number
+  url: string
+}
+
+export async function getVideosNeedingThumbnails(): Promise<ThumbnailBackfillRow[]> {
+  await requireAuth()
+  await ensureSchema()
+
+  const artworkVideos = (await sql`
+    SELECT id, url FROM artwork_media WHERE media_type = 'video' AND thumbnail_url IS NULL
+  `) as { id: number; url: string }[]
+  const aboutVideos = (await sql`
+    SELECT id, url FROM about_photos WHERE media_type = 'video' AND thumbnail_url IS NULL
+  `) as { id: number; url: string }[]
+
+  return [
+    ...artworkVideos.map((r) => ({ ...r, table: 'artwork_media' as const })),
+    ...aboutVideos.map((r) => ({ ...r, table: 'about_photos' as const })),
+  ]
+}
+
+export async function setMediaThumbnail(formData: FormData) {
+  await requireAuth()
+  await ensureSchema()
+
+  const table = String(formData.get('table') ?? '')
+  const id = Number(formData.get('id'))
+  const thumbnailUrl = String(formData.get('thumbnail_url') ?? '').trim()
+  if (!thumbnailUrl) {
+    throw new Error('Missing thumbnail URL')
+  }
+
+  if (table === 'artwork_media') {
+    await sql`UPDATE artwork_media SET thumbnail_url = ${thumbnailUrl} WHERE id = ${id}`
+  } else if (table === 'about_photos') {
+    await sql`UPDATE about_photos SET thumbnail_url = ${thumbnailUrl} WHERE id = ${id}`
+  } else {
+    throw new Error('Invalid table')
+  }
+  revalidateAll()
+}
+
 function parseCoord(value: FormDataEntryValue | null): number | null {
   const s = String(value ?? '').trim()
   if (!s) return null
@@ -374,7 +426,7 @@ export async function addArtworkMedia(formData: FormData) {
 
   const artworkId = Number(formData.get('artwork_id'))
   const itemsRaw = String(formData.get('items') ?? '[]')
-  let items: { url: string; media_type: 'image' | 'video' }[]
+  let items: { url: string; media_type: 'image' | 'video'; thumbnail_url?: string | null }[]
   try {
     items = JSON.parse(itemsRaw)
   } catch {
@@ -393,8 +445,8 @@ export async function addArtworkMedia(formData: FormData) {
   for (const item of items) {
     const mediaType = item.media_type === 'video' ? 'video' : 'image'
     await sql`
-      INSERT INTO artwork_media (artwork_id, media_type, url, sort_order)
-      VALUES (${artworkId}, ${mediaType}, ${item.url}, ${nextOrder})
+      INSERT INTO artwork_media (artwork_id, media_type, url, thumbnail_url, sort_order)
+      VALUES (${artworkId}, ${mediaType}, ${item.url}, ${item.thumbnail_url ?? null}, ${nextOrder})
     `
     nextOrder += 1
   }
@@ -406,8 +458,10 @@ export async function deleteArtworkMedia(formData: FormData) {
   await ensureSchema()
   const id = Number(formData.get('id'))
 
-  const rows = await sql`SELECT url FROM artwork_media WHERE id = ${id}`
-  await deleteBlobIfOwned((rows[0] as { url: string })?.url)
+  const rows = await sql`SELECT url, thumbnail_url FROM artwork_media WHERE id = ${id}`
+  const row = rows[0] as { url: string; thumbnail_url: string | null } | undefined
+  await deleteBlobIfOwned(row?.url)
+  await deleteBlobIfOwned(row?.thumbnail_url)
 
   await sql`DELETE FROM artwork_media WHERE id = ${id}`
   revalidateAll()
@@ -449,7 +503,7 @@ export async function addAboutPhotos(formData: FormData) {
   await ensureSchema()
 
   const itemsRaw = String(formData.get('items') ?? '[]')
-  let items: { url: string; media_type: 'image' | 'video' }[]
+  let items: { url: string; media_type: 'image' | 'video'; thumbnail_url?: string | null }[]
   try {
     items = JSON.parse(itemsRaw)
   } catch {
@@ -466,8 +520,8 @@ export async function addAboutPhotos(formData: FormData) {
   for (const item of items) {
     const mediaType = item.media_type === 'video' ? 'video' : 'image'
     await sql`
-      INSERT INTO about_photos (media_type, url, sort_order)
-      VALUES (${mediaType}, ${item.url}, ${nextOrder})
+      INSERT INTO about_photos (media_type, url, thumbnail_url, sort_order)
+      VALUES (${mediaType}, ${item.url}, ${item.thumbnail_url ?? null}, ${nextOrder})
     `
     nextOrder += 1
   }
@@ -479,8 +533,10 @@ export async function deleteAboutPhoto(formData: FormData) {
   await ensureSchema()
   const id = Number(formData.get('id'))
 
-  const rows = await sql`SELECT url FROM about_photos WHERE id = ${id}`
-  await deleteBlobIfOwned((rows[0] as { url: string })?.url)
+  const rows = await sql`SELECT url, thumbnail_url FROM about_photos WHERE id = ${id}`
+  const row = rows[0] as { url: string; thumbnail_url: string | null } | undefined
+  await deleteBlobIfOwned(row?.url)
+  await deleteBlobIfOwned(row?.thumbnail_url)
 
   await sql`DELETE FROM about_photos WHERE id = ${id}`
   revalidateAll()

@@ -8,7 +8,7 @@ import {
   deleteAboutPhoto,
   reorderAboutPhoto,
 } from '@/app/actions/studio'
-import { uploadFile, mediaTypeFor } from '@/lib/blob-client'
+import { uploadMediaItem } from '@/lib/blob-client'
 import { Dropzone } from '@/components/ui/dropzone'
 import { FileInput } from '@/components/ui/file-input'
 import { Button } from '@/components/ui/button'
@@ -114,7 +114,9 @@ function PhotoThumb({
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent showCloseButton className="max-w-2xl overflow-hidden p-0 sm:rounded-none">
           <MediaCarousel
-            items={[{ type: photo.media_type, url: photo.url }]}
+            items={[
+              { type: photo.media_type, url: photo.url, thumbnailUrl: photo.thumbnail_url ?? undefined },
+            ]}
             alt=""
             className="h-[70vh] sm:h-[75vh]"
             fit="contain"
@@ -170,12 +172,7 @@ export function AboutPhotosManager({ photos }: { photos: AboutPhoto[] }) {
     if (chosen.length === 0) return
     setUploading(true)
     try {
-      const items = await Promise.all(
-        chosen.map(async (file) => ({
-          url: await uploadFile(file, 'about-photos'),
-          media_type: mediaTypeFor(file),
-        })),
-      )
+      const items = await Promise.all(chosen.map((file) => uploadMediaItem(file, 'about-photos')))
       const fd = new FormData()
       fd.set('items', JSON.stringify(items))
       startTransition(async () => {
