@@ -11,10 +11,14 @@ import {
   getArtworks,
   getArtworkMediaByArtwork,
   getCollection,
+  getCollections,
   getSiteContent,
 } from '@/lib/queries'
 
 export const dynamic = 'force-dynamic'
+
+// How many other places to suggest at the bottom of a place's page.
+const MORE_PLACES_COUNT = 4
 
 export async function generateMetadata({
   params,
@@ -37,10 +41,11 @@ export default async function CollectionPage({
   const collectionId = Number(id)
   if (!Number.isFinite(collectionId)) notFound()
 
-  const [collection, artworks, mediaMap, content] = await Promise.all([
+  const [collection, artworks, mediaMap, collections, content] = await Promise.all([
     getCollection(collectionId),
     getArtworks(),
     getArtworkMediaByArtwork(),
+    getCollections(),
     getSiteContent(),
   ])
 
@@ -49,6 +54,9 @@ export default async function CollectionPage({
   const pieces = artworks.filter((a) => a.collection_id === collectionId)
   const mediaByArtwork = Object.fromEntries(mediaMap)
   const contact = splitEmail(content.contact_email)
+  const morePlaces = collections
+    .filter((c) => c.id !== collectionId)
+    .slice(0, MORE_PLACES_COUNT)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -139,6 +147,32 @@ export default async function CollectionPage({
             contactDomain={contact?.domain}
           />
         </div>
+
+        {morePlaces.length > 0 && (
+          <div className="mt-16 border-t border-border pt-12">
+            <h2 className="mb-6 font-serif text-2xl font-semibold">
+              More places to explore
+            </h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {morePlaces.map((place) => (
+                <Link key={place.id} href={`/gallery/${place.id}`} className="group block">
+                  <div className="relative aspect-4/5 overflow-hidden bg-muted">
+                    <Image
+                      src={place.cover_image_url || '/placeholder.svg'}
+                      alt={place.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                  <p className="mt-2 font-serif text-sm leading-tight transition-colors group-hover:text-accent sm:text-base">
+                    {place.title}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <SiteFooter email={content.contact_email} />
     </div>
