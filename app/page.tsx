@@ -3,49 +3,21 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
-import { CollectionsGrid } from '@/components/collections-grid'
-import { slidesForCollection } from '@/lib/media'
-import {
-  getArtworks,
-  getArtworkMediaByArtwork,
-  getCollections,
-  getShows,
-  getSiteContent,
-} from '@/lib/queries'
+import { PlacesCarousel } from '@/components/places-carousel'
+import { getCollections, getShows, getSiteContent } from '@/lib/queries'
 import { formatShowDate, isUpcoming } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
 
-// How many places show in the homepage's "Recent places" preview — one
-// clean row at desktop width, matching the gallery grid's own column count.
-const RECENT_PLACES_COUNT = 3
-
 const DEFAULT_HERO_INTRO = `Every piece begins with a place. Sea glass gathered from the shoreline becomes a mosaic of that very beach. Water drawn from the sound becomes the watercolor that captures it. Wildflowers collected along the trail are preserved in resin, and leaves found in the forest leave their imprint in clay. Whenever possible, the work is created where it began, allowing each piece to carry a tangible connection to the landscape that inspired it.`
 
 export default async function HomePage() {
-  const [artworks, mediaMap, collections, shows, content] = await Promise.all([
-    getArtworks(),
-    getArtworkMediaByArtwork(),
+  const [collections, shows, content] = await Promise.all([
     getCollections(),
     getShows(),
     getSiteContent(),
   ])
 
-  const mediaByArtwork = Object.fromEntries(mediaMap)
-  const recentPlaces = collections.slice(0, RECENT_PLACES_COUNT)
-  const slidesByCollection = Object.fromEntries(
-    recentPlaces.map((c) => [
-      c.id,
-      slidesForCollection(
-        c,
-        artworks.filter((a) => a.collection_id === c.id),
-        mediaByArtwork,
-      ),
-    ]),
-  )
-  const pieceCountByCollection = Object.fromEntries(
-    recentPlaces.map((c) => [c.id, artworks.filter((a) => a.collection_id === c.id).length]),
-  )
   const upcoming = shows.filter((s) => isUpcoming(s.start_date, s.end_date))[0]
   // `||` (not `??`) on purpose: saving the field blank in the Studio should
   // fall back to the default text, not render an empty paragraph.
@@ -128,11 +100,12 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Recent places */}
+        {/* Places — a light teaser row, not the full gallery treatment; see
+         * PlacesCarousel for why that split exists. */}
         <section className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-16">
           <div className="mb-8 flex items-end justify-between border-b border-border pb-4">
             <h2 className="font-serif text-3xl font-semibold md:text-4xl">
-              Recent places
+              Places
             </h2>
             <Link
               href="/gallery"
@@ -141,11 +114,7 @@ export default async function HomePage() {
               See all places &rarr;
             </Link>
           </div>
-          <CollectionsGrid
-            collections={recentPlaces}
-            slidesByCollection={slidesByCollection}
-            pieceCountByCollection={pieceCountByCollection}
-          />
+          <PlacesCarousel places={collections} />
         </section>
 
         {/* Upcoming show banner */}
