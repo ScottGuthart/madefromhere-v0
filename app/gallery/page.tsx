@@ -2,8 +2,7 @@ import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { GalleryGrid } from '@/components/gallery-grid'
 import { CollectionsGrid } from '@/components/collections-grid'
-import type { MediaItem } from '@/components/media-carousel'
-import { slidesForArtwork } from '@/lib/media'
+import { slidesForCollection } from '@/lib/media'
 import { splitEmail } from '@/lib/email'
 import {
   getArtworks,
@@ -11,31 +10,12 @@ import {
   getCollections,
   getSiteContent,
 } from '@/lib/queries'
-import type { Artwork, ArtworkMedia, Collection } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Gallery — Made From Here',
   description: 'Browse original art, organized by the places that inspired it.',
-}
-
-// The place's own photo, then every piece made there (its main image, then
-// its supplemental photos/videos) — so the gallery grid card can be
-// browsed as one carousel without clicking into the place first.
-function slidesForCollection(
-  collection: Collection,
-  pieces: Artwork[],
-  mediaByArtwork: Record<number, ArtworkMedia[]>,
-): MediaItem[] {
-  const slides: MediaItem[] = []
-  if (collection.cover_image_url) {
-    slides.push({ type: 'image', url: collection.cover_image_url })
-  }
-  for (const piece of pieces) {
-    slides.push(...slidesForArtwork(piece, mediaByArtwork[piece.id]))
-  }
-  return slides
 }
 
 export default async function GalleryPage() {
