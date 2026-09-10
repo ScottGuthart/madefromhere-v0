@@ -4,7 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
 import { PlacesCarousel } from '@/components/places-carousel'
-import { getCollections, getShows, getSiteContent } from '@/lib/queries'
+import { getArtworks, getCollections, getShows, getSiteContent } from '@/lib/queries'
 import { formatShowDate, isUpcoming } from '@/lib/format'
 
 export const dynamic = 'force-dynamic'
@@ -12,12 +12,16 @@ export const dynamic = 'force-dynamic'
 const DEFAULT_HERO_INTRO = `Every piece begins with a place. Sea glass gathered from the shoreline becomes a mosaic of that very beach. Water drawn from the sound becomes the watercolor that captures it. Wildflowers collected along the trail are preserved in resin, and leaves found in the forest leave their imprint in clay. Whenever possible, the work is created where it began, allowing each piece to carry a tangible connection to the landscape that inspired it.`
 
 export default async function HomePage() {
-  const [collections, shows, content] = await Promise.all([
+  const [collections, artworks, shows, content] = await Promise.all([
     getCollections(),
+    getArtworks(),
     getShows(),
     getSiteContent(),
   ])
 
+  const pieceCountByCollection = Object.fromEntries(
+    collections.map((c) => [c.id, artworks.filter((a) => a.collection_id === c.id).length]),
+  )
   const upcoming = shows.filter((s) => isUpcoming(s.start_date, s.end_date))[0]
   // `||` (not `??`) on purpose: saving the field blank in the Studio should
   // fall back to the default text, not render an empty paragraph.
@@ -114,7 +118,7 @@ export default async function HomePage() {
               See all places &rarr;
             </Link>
           </div>
-          <PlacesCarousel places={collections} />
+          <PlacesCarousel places={collections} pieceCountByPlace={pieceCountByCollection} />
         </section>
 
         {/* Upcoming show banner */}

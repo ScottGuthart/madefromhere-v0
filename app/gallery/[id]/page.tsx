@@ -55,6 +55,9 @@ export default async function CollectionPage({
   // Every other place, same as the homepage's "Places" row — no cap, since
   // that carousel is built to scroll through the full list.
   const morePlaces = collections.filter((c) => c.id !== collectionId)
+  const pieceCountByPlace = Object.fromEntries(
+    morePlaces.map((c) => [c.id, artworks.filter((a) => a.collection_id === c.id).length]),
+  )
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -151,7 +154,7 @@ export default async function CollectionPage({
             <h2 className="mb-6 font-serif text-2xl font-semibold">
               More places to explore
             </h2>
-            <PlacesCarousel places={morePlaces} />
+            <PlacesCarousel places={morePlaces} pieceCountByPlace={pieceCountByPlace} />
           </div>
         )}
       </main>
