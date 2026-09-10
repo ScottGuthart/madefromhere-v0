@@ -9,9 +9,12 @@ import { cn } from '@/lib/utils'
 
 // Fixed card width so scroll-by-one-card math and the scroll-snap points
 // agree with each other — a percentage-based card wouldn't let a plain
-// `scrollBy` land exactly on the next snap point.
-const CARD_WIDTH = 120
-const CARD_HEIGHT = 90
+// `scrollBy` land exactly on the next snap point. Portrait (4:5), matching
+// every other photo on the site (PlaceCard, the hero, gallery pieces) —
+// place photos are shot vertically, and a landscape box here just crops
+// them down instead of showing the actual composition.
+const CARD_WIDTH = 96
+const CARD_HEIGHT = 120
 const CARD_GAP = 16
 
 // A light, teaser-weight way to browse every place — just enough to invite
@@ -77,7 +80,7 @@ export function PlacesCarousel({ places }: { places: Collection[] }) {
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <p className="mt-2 truncate font-serif text-sm leading-tight transition-colors group-hover:text-accent">
+              <p className="mt-2 line-clamp-2 font-serif text-sm leading-tight transition-colors group-hover:text-accent">
                 {place.title}
               </p>
             </Link>
@@ -99,7 +102,7 @@ export function PlacesCarousel({ places }: { places: Collection[] }) {
           onClick={() => scrollByCard(-1)}
           disabled={atStart}
           className={cn(
-            'absolute -left-4 top-[calc(45px-16px)] hidden size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm transition-opacity hover:bg-muted md:flex',
+            'absolute -left-4 top-[calc(60px-16px)] hidden size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm transition-opacity hover:bg-muted md:flex',
             atStart ? 'pointer-events-none opacity-0' : 'opacity-100',
           )}
         >
@@ -111,7 +114,7 @@ export function PlacesCarousel({ places }: { places: Collection[] }) {
           onClick={() => scrollByCard(1)}
           disabled={atEnd}
           className={cn(
-            'absolute -right-4 top-[calc(45px-16px)] hidden size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm transition-opacity hover:bg-muted md:flex',
+            'absolute -right-4 top-[calc(60px-16px)] hidden size-8 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm transition-opacity hover:bg-muted md:flex',
             atEnd ? 'pointer-events-none opacity-0' : 'opacity-100',
           )}
         >
