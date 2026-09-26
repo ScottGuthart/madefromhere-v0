@@ -456,6 +456,29 @@ function ArtworkRow({
   const [editing, setEditing] = useState(false)
   const [showMedia, setShowMedia] = useState(false)
   const [pending, startTransition] = useTransition()
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState(art.image_url)
+  const [uploadingImage, setUploadingImage] = useState(false)
+
+  const shownImage = imagePreview ?? imageUrl
+
+  async function handleImageFile(file: File) {
+    setImagePreview(URL.createObjectURL(file))
+    setUploadingImage(true)
+    try {
+      setImageUrl(await uploadFile(file, 'artworks'))
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Upload failed')
+      setImagePreview(null)
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  function onImageFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) handleImageFile(file)
+  }
 
   function move(direction: 'up' | 'down') {
     const fd = new FormData()
@@ -477,6 +500,7 @@ function ArtworkRow({
         await updateArtwork(formData)
         toast.success('Piece updated')
         setEditing(false)
+        setImagePreview(null)
       } catch (e) {
         toast.error(e instanceof Error ? e.message : 'Update failed')
       }
@@ -502,18 +526,33 @@ function ArtworkRow({
   return (
     <div className="border border-border bg-card p-4">
       <div className="flex gap-4">
-        <div className="relative aspect-4/5 w-20 shrink-0 overflow-hidden bg-muted">
-          <Image
-            src={art.image_url || '/placeholder.svg'}
-            alt={art.title}
-            fill
-            className="object-cover"
-          />
-        </div>
+        {editing ? (
+          <div className="w-28 shrink-0 space-y-2 sm:w-36">
+            <Dropzone
+              onFiles={(files) => handleImageFile(files[0])}
+              disabled={uploadingImage}
+              className="relative aspect-4/5 w-full overflow-hidden bg-muted"
+            >
+              <Image src={shownImage || '/placeholder.svg'} alt={art.title} fill className="object-cover" />
+            </Dropzone>
+            <FileInput accept="image/*" disabled={uploadingImage} onChange={onImageFileChosen} />
+            {uploadingImage && <p className="text-xs text-muted-foreground">Uploading…</p>}
+          </div>
+        ) : (
+          <div className="relative aspect-4/5 w-20 shrink-0 overflow-hidden bg-muted">
+            <Image
+              src={art.image_url || '/placeholder.svg'}
+              alt={art.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
 
         {editing ? (
           <form action={onUpdate} className="flex-1 space-y-3">
             <input type="hidden" name="id" value={art.id} />
+            <input type="hidden" name="image_url" value={imageUrl} />
             <Input name="title" defaultValue={art.title} required />
             <div className="grid grid-cols-2 gap-3">
               <Input name="medium" defaultValue={art.medium} placeholder="Medium" />
@@ -536,14 +575,18 @@ function ArtworkRow({
             </div>
             <Textarea name="description" defaultValue={art.description} rows={2} />
             <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={pending}>
+              <Button type="submit" size="sm" disabled={pending || uploadingImage}>
                 Save
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
-                onClick={() => setEditing(false)}
+                onClick={() => {
+                  setEditing(false)
+                  setImagePreview(null)
+                  setImageUrl(art.image_url)
+                }}
               >
                 <X className="size-4" /> Cancel
               </Button>

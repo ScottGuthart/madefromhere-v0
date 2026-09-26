@@ -362,13 +362,33 @@ export async function updateArtwork(formData: FormData) {
   const status = String(formData.get('status') ?? 'available')
   const collectionRaw = String(formData.get('collection_id') ?? '').trim()
   const collectionId = collectionRaw ? Number(collectionRaw) : null
+  const imageUrl = String(formData.get('image_url') ?? '').trim()
 
-  await sql`
-    UPDATE artworks
-    SET title = ${title}, description = ${description}, medium = ${medium},
-        year = ${year}, created_date = ${createdDate}, status = ${status}, collection_id = ${collectionId}
-    WHERE id = ${id}
-  `
+  // image_url is only ever submitted as either the piece's existing image
+  // or a freshly uploaded replacement — never blank — but treat blank as
+  // "leave it alone" too, just in case. When it did change, clean up the
+  // photo it's replacing so it doesn't sit around as an orphaned upload.
+  if (imageUrl) {
+    const rows = await sql`SELECT image_url FROM artworks WHERE id = ${id}`
+    const previousUrl = (rows[0] as { image_url: string } | undefined)?.image_url
+    if (previousUrl && previousUrl !== imageUrl) {
+      await deleteBlobIfOwned(previousUrl)
+    }
+    await sql`
+      UPDATE artworks
+      SET title = ${title}, description = ${description}, medium = ${medium},
+          year = ${year}, created_date = ${createdDate}, status = ${status},
+          collection_id = ${collectionId}, image_url = ${imageUrl}
+      WHERE id = ${id}
+    `
+  } else {
+    await sql`
+      UPDATE artworks
+      SET title = ${title}, description = ${description}, medium = ${medium},
+          year = ${year}, created_date = ${createdDate}, status = ${status}, collection_id = ${collectionId}
+      WHERE id = ${id}
+    `
+  }
   revalidateAll()
 }
 
